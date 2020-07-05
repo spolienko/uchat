@@ -1,0 +1,4 @@
+modes/libcrypto_la-ghash-macosx-x86_64.lo: modes/ghash-macosx-x86_64.S \
+  x86_arch.h
+
+x86_arch.h:

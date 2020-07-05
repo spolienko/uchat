@@ -1,0 +1,4 @@
+aes/libcrypto_la-aesni-macosx-x86_64.lo: aes/aesni-macosx-x86_64.S \
+  x86_arch.h
+
+x86_arch.h:

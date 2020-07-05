@@ -1,0 +1,4 @@
+bn/libcrypto_la-mont5-macosx-x86_64.lo: bn/mont5-macosx-x86_64.S \
+  x86_arch.h
+
+x86_arch.h:

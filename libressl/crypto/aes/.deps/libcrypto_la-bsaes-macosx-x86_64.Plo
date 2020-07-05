@@ -1,0 +1,4 @@
+aes/libcrypto_la-bsaes-macosx-x86_64.lo: aes/bsaes-macosx-x86_64.S \
+  x86_arch.h
+
+x86_arch.h:
