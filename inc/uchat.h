@@ -39,7 +39,6 @@
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
-#include <sqlite3.h>
 
 #include "../libressl/include/tls.h"
 #include "../libressl/include/openssl/evp.h"
@@ -47,6 +46,8 @@
 #include "../libressl/include/openssl/aes.h"
 #include "../libressl/include/openssl/conf.h"
 
+#include <sqlite3.h>
+#include "cJSON.h"
 #include "../libmx/inc/libmx.h"
 
 #define MX_MAX_CONN 10

@@ -47,7 +47,10 @@ LIBRESSL_H = \
 
 all: install
 
-server: $(NAME_S)
+server: $(CJSON) $(NAME_S)
+
+$(CJSON):
+	@make -sC ./cjson/
 
 $(NAME_S): $(LMXA) $(OBJS_SERVER)
 
@@ -82,11 +85,12 @@ $(OBJS_CLIENT): | $(OBJD)
 
 install: server client
 
-
 clean:
 # 	@make -sC $(LBMXD) clean
 	@rm -rf $(OBJD)
+	@rm -rf cjson_lib.a
 	@printf "$(OBJD)\t\t   \033[31;1mdeleted\033[0m\n"
+	@printf "cjson library\t   \033[31;1mdeleted\033[0m\n"
 
 uninstall: clean
 # 	@make -sC $(LBMXD) uninstall
