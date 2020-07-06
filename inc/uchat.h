@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
+#include <sqlite3.h>
 
 #include "../libressl/include/tls.h"
 #include "../libressl/include/openssl/evp.h"
@@ -49,6 +50,25 @@
 #include "../libmx/inc/libmx.h"
 
 #define MX_MAX_CONN 10
+
+/* database */
+
+typedef struct s_data {
+    sqlite3 *database;
+    pthread_mutex_t msg_mutex;
+    sqlite3_stmt *stmt;
+    long long last_msg_id;
+} t_data;
+
+void mx_database_init(t_data *data);
+
+char *mx_chat_get_user_password(t_data data, char *login);
+int mx_chat_create_user(t_data data, char *login, char *password, char *tema,
+                        char *lang);
+void mx_chat_create_session(t_data data, char *login);
+void mx_chat_new_message(t_data data, const char *login, const char *msg);
+void mx_chat_delete_last_message(t_data data, const char *login);
+void mx_chat_delete_session(t_data data, const char *login);
 
 /* server */
 

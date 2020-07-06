@@ -22,13 +22,16 @@ SRC_SERVER = main.c \
 			network.c \
 			set_tls1.c \
 			set_tls2.c \
+			mx_database_delete.c \
+			mx_database_edit.c \
+			mx_database_init.c \
              
 SRC_CLIENT = main_client.c
 
 OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
 
-CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic
+CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic 
 
 LIBRESSL_A = ./libressl/tls/.libs/libtls.a \
 			 ./libressl/ssl/.libs/libssl.a \
@@ -48,7 +51,7 @@ server: $(NAME_S)
 
 $(NAME_S): $(LMXA) $(OBJS_SERVER)
 
-	@clang $(CFLAGS) $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
+	@clang $(CFLAGS) -lsqlite3 $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
 	@printf "\r\33[2K$@\t   \033[32;1mcreated\033[0m\n"
 
 $(OBJD)/%.o: src/server/%.c $(INCS)

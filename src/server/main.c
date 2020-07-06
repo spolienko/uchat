@@ -4,11 +4,13 @@ int main(int argc, char **argv) {
     int port;
     int network_socket;
     t_connection *conn;
+    t_data data;
 
     if (argc == 2) {
         port = atoi(argv[1]);
         // mx_demonize("uchat_server.log");
         conn = (t_connection*)malloc(sizeof(t_connection));
+        mx_database_init(&data); // Добавить компиляцию sqlite3 в Makefile
         network_socket = mx_start_network(port);
         mx_tls_start(conn);
         mx_start_server(network_socket, conn);

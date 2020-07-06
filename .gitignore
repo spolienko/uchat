@@ -1,0 +1,10 @@
+
+.DS_Store
+*.out
+*.exe
+*.swp
+*.a
+._DS_Store
+chat.sqlite
+uchat
+uchat_server
