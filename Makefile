@@ -92,8 +92,10 @@ clean:
 	@rm -rf $(OBJD)
 	@rm -rf cjson_lib.a
 	@rm -rf ./cjson/cjson_lib.a
+	@rm -rf uchat_server.log
 	@printf "$(OBJD)\t\t   \033[31;1mdeleted\033[0m\n"
 	@printf "cjson library\t   \033[31;1mdeleted\033[0m\n"
+	@printf "uchat_server.log\t   \033[31;1mdeleted\033[0m\n"
 
 uninstall: clean
 # 	@make -sC $(LBMXD) uninstall

@@ -8,3 +8,6 @@
 chat.sqlite
 uchat
 uchat_server
+cjson/
+cjson_lib.a
+uchat_server.log

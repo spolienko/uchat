@@ -54,7 +54,7 @@ void mx_listen_for_events(t_data *data, int kq, int sock, struct kevent *kEvent,
                 tls_free(conn->connection_array[kEvent->ident]);
             }
             else {
-                if((mx_client_worker(data, conn->connection_array[kEvent->ident])) == -1) {
+                if((mx_client_worker(conn, kEvent, data) == -1)) {
                     printf("error");
                     break ;
                 }

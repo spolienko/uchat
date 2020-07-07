@@ -88,7 +88,7 @@ typedef struct s_connection {
 
 void mx_start_server(t_data *data, int socket, t_connection *conn);
 void mx_demonize(char *logfile);
-int mx_client_worker(t_data *data, struct tls *tls_accept);
+int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data);
 void mx_listen_for_events(t_data *data, int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn);
 struct tls_config *mx_tls_config_new(void);
 int mx_tls_config_parse_proto(unsigned int *p);
