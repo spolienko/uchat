@@ -3,8 +3,6 @@
 void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
     int event;
     int client;
-    struct sockaddr_storage caddr;
-    socklen_t clen = sizeof(caddr);
 
     for(;;) {
         event = kevent(kq, NULL, 0, kEvent, 1, t);
@@ -20,11 +18,11 @@ void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timesp
                 printf(" Connect from client error: %s\n", strerror(errno));
                 break ;
             }
-            char buff[100];
+            //char buff[100];
             printf("New client: %d\n", client);
-            getnameinfo((struct sockaddr*)&caddr, clen,
-                        buff, 100, 0, 0,
-                        NI_NUMERICHOST);
+            // getnameinfo((struct sockaddr*)&caddr, clen,
+            //             buff, 100, 0, 0,
+            //             NI_NUMERICHOST);
             EV_SET(kEvent, client, EVFILT_READ, EV_ADD, 0, 0, 0);
             if (kevent(kq, kEvent, 1, 0, 0, NULL) == -1) {
                 printf("Client kevent error: %s\n", strerror(errno));
@@ -38,13 +36,9 @@ void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timesp
 
             if (tls_handshake(conn->connection_array[client]) < 0) {
                 printf("tls_handshake error\n");
-                // printf("%s\n", tls_error(conn->connection_array[client]));
                 exit(1);
             }
-
-            // mx_report_tls(conn->connection_array[client], "new client connected");
-            printf("\n");
-            printf("Client connected successfully\n");
+            printf("Client connected successfully %d\n", client);
         }
         else {
             if ((kEvent->fflags & EV_EOF) != 0) {
@@ -54,7 +48,7 @@ void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timesp
                 tls_free(conn->connection_array[kEvent->ident]);
             }
             else {
-                if((mx_client_worker(conn->connection_array[kEvent->ident])) == -1) {
+                if((mx_client_worker(conn, kEvent)) == -1) {
                     printf("error");
                     break ;
                 }

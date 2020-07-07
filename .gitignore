@@ -1,0 +1,4 @@
+chat.sqlite
+cjson/
+cjson_lib.a
+uchat_server.log

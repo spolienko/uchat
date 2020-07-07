@@ -48,7 +48,7 @@
 
 #include "../libmx/inc/libmx.h"
 
-#define MX_MAX_CONN 10
+#define MX_MAX_CONN 8
 
 /* server */
 
@@ -60,9 +60,8 @@ typedef struct s_connection {
 
 void mx_start_server(int socket, t_connection *conn);
 void mx_demonize(char *logfile);
-int mx_client_worker(struct tls *tls_accept);
+int mx_client_worker(t_connection *conn, struct kevent *kEvent);
 void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn);
-void mx_start_server(int socket, t_connection *conn);
 struct tls_config *mx_tls_config_new(void);
 int mx_tls_config_parse_proto(unsigned int *p);
 int mx_tls_config_set_proto(struct tls_config *conf, unsigned int p);
