@@ -11,7 +11,7 @@ static char *create_table_users() {
 
 static char *create_table_messages() {
     char *str = "CREATE TABLE IF NOT EXISTS messages(id integer primary key ";
-    char *str2 = mx_strjoin(str, "NOT NULL, time int64 NOT NULL, login ");
+    char *str2 = mx_strjoin(str, "NOT NULL, time varchar(32), login ");
     char *str3 = mx_strjoin(str2, "varchar(32), body text)");
     
     mx_strdel(&str2);

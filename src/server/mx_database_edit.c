@@ -60,32 +60,30 @@ void mx_chat_create_session(t_data *data, char *login) {
     pthread_mutex_unlock(&msg_mutex);  
 }
 
-static char *join_str() {
+static char *str_init() {
     char *str =  "INSERT INTO messages(time, login, body) ";
     char *res = mx_strjoin(str, "VALUES (?, ?, ?)");
     
     return res;
 }
 
-void mx_chat_new_message(t_data *data, const char *login, const char *msg) {
-    struct timeval tv; /* Вставка сообщения в messages */
-    long long time_encoded;
-    sqlite3 *db = data->database;
+char * mx_chat_new_message(t_data *data, char *log, char *msg) {
+    sqlite3 *db = data->database;   /* Вставка сообщения в messages */
     sqlite3_stmt *stmt = data->stmt;
     pthread_mutex_t msg_mutex = PTHREAD_MUTEX_INITIALIZER;
-    char *str =  join_str();
+    char *str = str_init();
+    char *msg_time = mx_time_to_str();
 
     pthread_mutex_lock(&msg_mutex);
-    gettimeofday(&tv, 0);
-    time_encoded = ((long long)tv.tv_sec << 32) + tv.tv_usec;
     sqlite3_prepare_v2(db, str, -1, &stmt, 0);
-    sqlite3_bind_int64(stmt, 1, time_encoded);
-    sqlite3_bind_text(stmt, 2, login, strlen(login), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, msg_time, strlen(msg_time), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, log, strlen(log), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 3, msg, strlen(msg), SQLITE_STATIC);
     if(sqlite3_step(stmt) != SQLITE_DONE)
         puts(sqlite3_errmsg(db));
     sqlite3_finalize(stmt);
     data->last_msg_id = sqlite3_last_insert_rowid(db);
     pthread_mutex_unlock(&msg_mutex);
+    return msg_time;
 }
 

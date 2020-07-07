@@ -59,3 +59,17 @@ int mx_check_login(t_data *data, char *login, char *pas) {
         return 2;
     return 3;
 }
+
+char *mx_time_to_str(void) {
+    struct timeval tv;
+    struct tm *nowtm;
+    char buf[64] = {0};
+    
+    gettimeofday(&tv, NULL);
+    if(tv.tv_sec) {
+        nowtm = localtime(&tv.tv_sec);
+        strftime(buf, 64, "%d.%m.%Y %H:%M:%S", nowtm);
+        return strdup(buf);
+    }
+    return strdup("Time reading error");
+}

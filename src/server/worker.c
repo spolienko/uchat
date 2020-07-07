@@ -1,26 +1,5 @@
 #include "uchat.h"
 
-
-static void do_login(t_data *data, char *buf) {
-    cJSON *str = cJSON_Parse(buf);
-    char *user = cJSON_GetObjectItemCaseSensitive(str, "user")->valuestring;
-    char *pas = cJSON_GetObjectItemCaseSensitive(str, "pasword")->valuestring;
-    int res = 0;
-
-    res = mx_check_login(data, user, pas);
-    if (res == 1)
-    /*send*/ ;//Создан новый пользователь 
-    else if (res == 2)
-    /*send*/ ;//Пароль и логин совпадают
-    else if (res == 3)
-    /*send*/ ;//Пароль не верен
-    else
-    /*send*/ ;//ошибка создания пользователя
-    mx_strdel(&user);
-    cJSON_Delete(str);
-
-}
-
 static int check_kind(char *buf) {
     cJSON *str = cJSON_Parse(buf);
     char *kind = cJSON_GetObjectItemCaseSensitive(str, "kind")->valuestring;
@@ -38,13 +17,15 @@ static int check_kind(char *buf) {
     return res;
 }
 
+
+
 static void do_message(t_data *data, char *buf) {
     switch (check_kind(buf)) {
         case 1:
-            do_login(data, buf);
+            mx_do_login(data, buf);
             break;
-        case 2: //msg
-            /* code */
+        case 2:
+            mx_do_msg(data, buf);
             break;
         case 3: //delete
             /* code */
