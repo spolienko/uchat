@@ -23,11 +23,17 @@ void mx_do_login(t_data *data, char *buf) {
 
 void mx_do_msg(t_data *data, char *buf) {
     cJSON *str = cJSON_Parse(buf);
+    cJSON *send = cJSON_CreateObject();
     char *user = cJSON_GetObjectItemCaseSensitive(str, "user")->valuestring;
     char *msg = cJSON_GetObjectItemCaseSensitive(str, "msg")->valuestring;
     char *time = mx_chat_new_message(data, user, msg); //Добавили msg в БД
     int msg_id = mx_get_msg_id(data, user, time, msg);
-    msg_id = 0;
-    /*send*/
-    mx_strdel(&time); // Заглушка
+
+    cJSON_AddStringToObject(send, "login", user);
+    cJSON_AddStringToObject(send, "msg", msg);
+    cJSON_AddStringToObject(send, "time", time);
+    cJSON_AddNumberToObject(send, "id", msg_id);
+    mx_strdel(&msg);
+    msg = cJSON_Print(send); //Send to clients
+    
 }
