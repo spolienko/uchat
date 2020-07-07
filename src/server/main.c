@@ -8,12 +8,12 @@ int main(int argc, char **argv) {
 
     if (argc == 2) {
         port = atoi(argv[1]);
-        // mx_demonize("uchat_server.log");
+        mx_demonize("uchat_server.log");
         conn = (t_connection*)malloc(sizeof(t_connection));
         mx_database_init(&data); // Добавить компиляцию sqlite3 в Makefile
         network_socket = mx_start_network(port);
         mx_tls_start(conn);
-        mx_start_server(network_socket, conn);
+        mx_start_server(&data, network_socket, conn);
         printf("Server socket: %d\n", network_socket);
     }
     else {

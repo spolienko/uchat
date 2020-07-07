@@ -50,11 +50,11 @@ all: install
 server: $(CJSON) $(NAME_S)
 
 $(CJSON):
-	@make -sC ./cjson/
+	@make -sC ./cjson
 
 $(NAME_S): $(LMXA) $(OBJS_SERVER)
-
-	@clang $(CFLAGS) -lsqlite3 $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
+	@make -sC ./cjson
+	@clang $(CFLAGS) -lsqlite3 cjson_lib.a $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
 	@printf "\r\33[2K$@\t   \033[32;1mcreated\033[0m\n"
 
 $(OBJD)/%.o: src/server/%.c $(INCS)
@@ -69,6 +69,7 @@ $(OBJD):
 	@mkdir -pv $@
 
 $(LMXA):
+	@make -sC ./cjson
 	@make -sC ./libmx/
 
 client: $(NAME_C)
@@ -89,6 +90,7 @@ clean:
 # 	@make -sC $(LBMXD) clean
 	@rm -rf $(OBJD)
 	@rm -rf cjson_lib.a
+	@rm -rf ./cjson/cjson_lib.a
 	@printf "$(OBJD)\t\t   \033[31;1mdeleted\033[0m\n"
 	@printf "cjson library\t   \033[31;1mdeleted\033[0m\n"
 

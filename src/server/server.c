@@ -1,6 +1,6 @@
 #include "uchat.h"
 
-void mx_start_server(int socket, t_connection *conn) {
+void mx_start_server(t_data *data, int socket, t_connection *conn) {
     int kq;
     struct kevent event;
     struct timespec timeout;
@@ -23,5 +23,5 @@ void mx_start_server(int socket, t_connection *conn) {
     }
     timeout.tv_sec = 1;
     timeout.tv_nsec = 0;
-    mx_listen_for_events(kq, socket, &event, &timeout, conn);
+    mx_listen_for_events(data, kq, socket, &event, &timeout, conn);
 }
