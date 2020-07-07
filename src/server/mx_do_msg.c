@@ -37,3 +37,13 @@ void mx_do_msg(t_data *data, char *buf) {
     msg = cJSON_Print(send); //Send to clients
     
 }
+
+void mx_do_user_interface(t_data *data, char *buf) {
+    cJSON *str = cJSON_Parse(buf);
+    char *user = cJSON_GetObjectItemCaseSensitive(str, "user")->valuestring;
+    char *tema = cJSON_GetObjectItemCaseSensitive(str, "tema")->valuestring;
+    char *lang = cJSON_GetObjectItemCaseSensitive(str, "lang")->valuestring;
+
+    mx_chat_add_ui_data(data, user, tema, lang);
+    cJSON_Delete(str);
+}

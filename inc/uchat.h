@@ -75,6 +75,8 @@ void mx_do_login(t_data *data, char *buf);
 char *mx_time_to_str(void);
 void mx_do_msg(t_data *data, char *buf);
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg);
+void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang);
+void mx_do_user_interface(t_data *data, char *buf);
 
 /* server */
 

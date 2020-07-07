@@ -73,3 +73,21 @@ char *mx_time_to_str(void) {
     }
     return strdup("Time reading error");
 }
+
+void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang) {
+    sqlite3 *db = data->database;
+    sqlite3_stmt *stmt = data->stmt;
+    pthread_mutex_t msg_mutex = PTHREAD_MUTEX_INITIALIZER;
+    char *str = "UPDATE users SET tema = ?1 WHERE login = ?2";
+    char *str2 = "UPDATE users SET lang = ?1 WHERE login = ?2";
+
+    pthread_mutex_lock(&msg_mutex);
+    sqlite3_prepare_v2(db, str, -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, tema, 5, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, login, strlen(login), SQLITE_STATIC);
+    sqlite3_prepare_v2(db, str2, -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, lang, 3, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, login, strlen(login), SQLITE_STATIC);
+    sqlite3_finalize(stmt);
+    pthread_mutex_unlock(&msg_mutex);
+}
