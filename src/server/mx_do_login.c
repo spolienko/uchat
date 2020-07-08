@@ -1,6 +1,6 @@
 #include "uchat.h"
 
-void mx_do_login(t_data *data, char *buf) {
+void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
     cJSON *str = cJSON_Parse(buf);
     char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
     char *msg = cJSON_GetObjectItemCaseSensitive(str, "pasword")->valuestring;
@@ -14,7 +14,8 @@ void mx_do_login(t_data *data, char *buf) {
     }
     else if (res == 3 || res == 0)
         msg =  mx_login_back(data, false, user);
-    // msg //Send to clients Тут нужен сендер отдельному клиенту
+    // отправка ответа на tlscon -- соединение с клиентом
+    tls_write(tlscon, msg, strlen(msg));
     mx_strdel(&user);
     cJSON_Delete(str);
 }

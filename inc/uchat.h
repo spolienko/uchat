@@ -71,7 +71,7 @@ char * mx_chat_new_message(t_data *data, char *login, char *msg);
 void mx_chat_delete_session(t_data *data, const char *login);
 
 int mx_check_login(t_data *data, char *login, char *pas);
-void mx_do_login(t_data *data, char *buf);
+void mx_do_login(t_data *data, char *buf, struct tls *tls);
 char *mx_time_to_str(void);
 char *mx_do_msg(t_data *data, char *buf);
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg);
