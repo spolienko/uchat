@@ -14,7 +14,7 @@ void mx_do_login(t_data *data, char *buf) {
     }
     else if (res == 3 || res == 0)
         msg =  mx_login_back(data, false, user);
-    // msg //Send to clients
+    // msg //Send to clients Тут нужен сендер отдельному клиенту
     mx_strdel(&user);
     cJSON_Delete(str);
 }

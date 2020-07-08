@@ -47,7 +47,7 @@ int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
     rc = tls_read(conn->connection_array[kEvent->ident], buf, sizeof(buf));
     if (rc > 0 ) {
         buf[rc] = 0;
-        msg = do_message(data, buf);
+        msg = do_message(data, buf);// Тут мне нужен сокет 
         for(int i = 3; i <= MX_MAX_CONN; i++)
             if ((struct tls *)conn->connection_array[i] != NULL &&
             (struct tls *)conn->connection_array[i] != (struct tls *)conn->connection_array[kEvent->ident]) {
