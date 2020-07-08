@@ -42,17 +42,15 @@ void mx_database_init(t_data *data) {
 }
 
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg) {
-    char *str = "SELECT id FROM messages WHERE login=? AND time=? AND body=?";
-    int rc;
+    char *s = "SELECT id FROM messages WHERE login=?1 AND time=?2 AND body=?3";
     int res;
 
     pthread_mutex_lock(&data->msg_mutex);
-    sqlite3_prepare_v2(data->database, str, -1, &data->stmt, 0);
+    sqlite3_prepare_v2(data->database, s, -1, &data->stmt, 0);
     sqlite3_bind_text(data->stmt, 1, login, strlen(login), SQLITE_STATIC);
     sqlite3_bind_text(data->stmt, 2, time, strlen(time), SQLITE_STATIC);
     sqlite3_bind_text(data->stmt, 3, msg, strlen(msg), SQLITE_STATIC);
-    rc = sqlite3_step(data->stmt);
-    if (rc == SQLITE_DONE) {
+    if (sqlite3_step(data->stmt) != SQLITE_DONE) {
         sqlite3_finalize(data->stmt);
         pthread_mutex_unlock(&data->msg_mutex);
         return 0;

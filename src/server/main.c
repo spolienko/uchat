@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
 
     if (argc == 2) {
         port = atoi(argv[1]);
-        mx_demonize("uchat_server.log");
+        //mx_demonize("uchat_server.log");
         conn = (t_connection*)malloc(sizeof(t_connection));
         mx_database_init(&data); // Добавить компиляцию sqlite3 в Makefile
         network_socket = mx_start_network(port);

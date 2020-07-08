@@ -100,7 +100,7 @@ int main(int argc, const char **argv) {
 
         if (pfd[1].revents & POLLIN) {
             if ((rc = tls_read(tls, bufs, 1000)) <= 0) break;
-            printf("Mesage (%lu): %s\n", rc, bufs);
+            printf("Message (%lu): %s\n", rc, bufs);
         }
 
     }

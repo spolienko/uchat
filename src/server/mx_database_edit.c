@@ -3,14 +3,12 @@
 char *mx_chat_get_user_password(t_data *data, char *login) {
     const char *password;
     char *res;
-    char *str = "SELECT password FROM users WHERE login=?";
-    int rc;
+    char *str = "SELECT password FROM users WHERE login=?1";
 
     pthread_mutex_lock(&data->msg_mutex);
     sqlite3_prepare_v2(data->database, str, -1, &data->stmt, 0);
     sqlite3_bind_text(data->stmt, 1, login, strlen(login), SQLITE_STATIC);
-    rc = sqlite3_step(data->stmt);
-    if(rc == SQLITE_DONE) {
+    if (sqlite3_step(data->stmt) != SQLITE_DONE) {
         sqlite3_finalize(data->stmt);
         pthread_mutex_unlock(&data->msg_mutex);
         return 0;
@@ -82,7 +80,7 @@ char * mx_chat_new_message(t_data *data, char *log, char *msg) {
     if(sqlite3_step(stmt) != SQLITE_DONE)
         puts(sqlite3_errmsg(db));
     sqlite3_finalize(stmt);
-    data->last_msg_id = sqlite3_last_insert_rowid(db);
+    //data->last_msg_id = sqlite3_last_insert_rowid(db);
     pthread_mutex_unlock(&msg_mutex);
     return msg_time;
 }
