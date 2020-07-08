@@ -63,7 +63,8 @@ static void add_lang_data(t_data *data, char *login, char *lang) {
     sqlite3_prepare_v2(db, str2, -1, &stmt, 0);
     sqlite3_bind_text(stmt, 1, lang, 3, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, login, strlen(login), SQLITE_STATIC);
-    sqlite3_step(stmt);
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        printf("Failed to add user lang\n");
     sqlite3_finalize(stmt);
     pthread_mutex_unlock(&msg_mutex);
 }
@@ -78,7 +79,8 @@ void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang) {
     sqlite3_prepare_v2(db, str, -1, &stmt, 0);
     sqlite3_bind_text(stmt, 1, tema, 5, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, login, strlen(login), SQLITE_STATIC);
-    sqlite3_step(stmt);
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        printf("Failed to add user tema\n");
     sqlite3_finalize(stmt);
     pthread_mutex_unlock(&msg_mutex);
     add_lang_data(data, login, lang);

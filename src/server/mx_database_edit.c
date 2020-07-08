@@ -11,7 +11,7 @@ char *mx_chat_get_user_password(t_data *data, char *login) {
     if (sqlite3_step(data->stmt) != SQLITE_DONE) {
         sqlite3_finalize(data->stmt);
         pthread_mutex_unlock(&data->msg_mutex);
-        return 0;
+        return NULL;
     }
     password = (const char *) sqlite3_column_text(data->stmt, 0);
     res = malloc(strlen(password) + 1);
@@ -80,7 +80,6 @@ char * mx_chat_new_message(t_data *data, char *log, char *msg) {
     if(sqlite3_step(stmt) != SQLITE_DONE)
         puts(sqlite3_errmsg(db));
     sqlite3_finalize(stmt);
-    //data->last_msg_id = sqlite3_last_insert_rowid(db);
     pthread_mutex_unlock(&msg_mutex);
     return msg_time;
 }

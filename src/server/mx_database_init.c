@@ -18,27 +18,33 @@ static char *create_table_messages() {
     return str3;
 }    /* Тут таблицы: ID, Время, Логин, Текст.*/
 
+static char *create_table_session() {
+    char *str = "CREATE TABLE sessions(login varchar(32) NOT NULL,";
+    char *str2 = mx_strjoin(str, " socet integer)");
+
+    return str2;
+}   /* Тут таблицы: Логин, Сокет.*/
+
+
 void mx_database_init(t_data *data) {
     sqlite3 *database = data->database;
     char *errmsg;
-    char *users = create_table_users();
-    char *messages = create_table_messages();
-    char *session = "CREATE TABLE sessions(login varchar(32) NOT NULL)";
+    char *str = create_table_users();
 
     if (sqlite3_open("chat.sqlite", &database))
         exit(1);
-    if (sqlite3_exec(database, users, 0, 0, &errmsg)){
+    if (sqlite3_exec(database, str, 0, 0, &errmsg)){
         printf("Database error: %s\n", errmsg);
         sqlite3_close(database);
-        mx_strdel(&users);
-        mx_strdel(&messages);
         exit(1);
     }
-    mx_strdel(&users);
-    sqlite3_exec(database, messages, 0, 0, &errmsg);
-    mx_strdel(&messages);
+    mx_strdel(&str);
+    str = create_table_messages();
+    sqlite3_exec(database, str, 0, 0, &errmsg);
+    mx_strdel(&str);
+    str = create_table_session();
     sqlite3_exec(database, "DROP TABLE IF EXISTS sessions", 0, 0, &errmsg);
-    sqlite3_exec(database, session, 0, 0, &errmsg);
+    sqlite3_exec(database, str, 0, 0, &errmsg);
 }
 
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg) {
