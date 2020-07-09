@@ -14,9 +14,8 @@ void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
     }
     else if (res == 3 || res == 0)
         msg =  mx_login_back(data, false, user);
-    // отправка ответа на tlscon -- соединение с клиентом
     tls_write(tlscon, msg, strlen(msg));
-    mx_strdel(&user);
+    mx_strdel(&user);// отправка ответа на tlscon -- соединение с клиентом
     cJSON_Delete(str);
 }
 

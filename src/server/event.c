@@ -1,6 +1,7 @@
 #include "uchat.h"
 
-void mx_listen_for_events(t_data *data, int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
+void mx_listen_for_events(t_data *data, int kq,
+int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
     int event;
     int client;
     struct sockaddr_storage caddr;

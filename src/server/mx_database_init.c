@@ -19,11 +19,11 @@ static char *create_table_messages() {
 }    /* Тут таблицы: ID, Время, Логин, Текст.*/
 
 static char *create_table_session() {
-    char *str = "CREATE TABLE sessions(login varchar(32) NOT NULL,";
-    char *str2 = mx_strjoin(str, " socet integer)");
+    char *str = "CREATE TABLE sessions(login varchar(32) NOT NULL)";
+    //char *str2 = mx_strjoin(str, ", socet integer)");
 
-    return str2;
-}   /* Тут таблицы: Логин, Сокет.*/
+    return str;
+}   /* Тут таблицы: Логин, (убрали)Сокет.*/
 
 
 void mx_database_init(t_data *data) {
