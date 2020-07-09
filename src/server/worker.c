@@ -49,13 +49,9 @@ int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
     char *msg;
     
     rc = tls_read(conn->connection_array[kEvent->ident], buf, sizeof(buf));
-
     if (rc > 0 ) {
         buf[rc] = 0;
-        
-            printf("\n\n We are send:\n %s\n\n", buf);
         msg = do_message(data, buf, (struct tls *)conn->connection_array[kEvent->ident]);
-
         for(int i = 3; i <= MX_MAX_CONN; i++)
             if (msg != NULL && (struct tls *)conn->connection_array[i] != NULL &&
             (struct tls *)conn->connection_array[i] != (struct tls *)conn->connection_array[kEvent->ident]) {

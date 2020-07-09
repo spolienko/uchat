@@ -5,12 +5,9 @@ void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
     char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
     char *msg = cJSON_GetObjectItemCaseSensitive(str, "pasword")->valuestring;
     int res = 0;
-    printf("login is:%s\n", user);
-    printf("password is:%s\n", msg);
 
     res = mx_check_login(data, user, msg);
     mx_strdel(&msg);
-    
     if (res == 1 || res == 2) {
         msg =  mx_login_back(data, true, user);
         mx_chat_create_session(data, user);
@@ -18,44 +15,36 @@ void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
     else if (res == 3 || res == 0)
         msg =  mx_login_back(data, false, user);
     tls_write(tlscon, msg, strlen(msg));
-    mx_strdel(&user);// отправка ответа на tlscon -- соединение с клиентом
+    mx_strdel(&user);
 }
 
 static char *get_user_tema(t_data *data, char *login) {
-    pthread_mutex_t msg_mutex = PTHREAD_MUTEX_INITIALIZER;
     char *str = "SELECT tema FROM users WHERE login=?";
     char *tema;
 
-    pthread_mutex_lock(&msg_mutex);
     sqlite3_prepare_v2(data->database, str, -1, &data->stmt, 0);
     sqlite3_bind_text(data->stmt, 1, login, strlen(login), SQLITE_STATIC);
-    if(sqlite3_step(data->stmt) != SQLITE_DONE) {
+    if(sqlite3_step(data->stmt) != SQLITE_ROW) {
         sqlite3_finalize(data->stmt);
-        pthread_mutex_unlock(&data->msg_mutex);
         return NULL;
     }
-    tema = (char *)sqlite3_column_text(data->stmt, 0);
+    tema = strdup((char *)sqlite3_column_text(data->stmt, 0));
     sqlite3_finalize(data->stmt);
-    pthread_mutex_unlock(&data->msg_mutex);
     return tema;
 }
 
 static char *get_user_lang(t_data *data, char *login) {
-    pthread_mutex_t msg_mutex = PTHREAD_MUTEX_INITIALIZER;
     char *str = "SELECT lang FROM users WHERE login=?";
     char *lang;
 
-    pthread_mutex_lock(&msg_mutex);
     sqlite3_prepare_v2(data->database, str, -1, &data->stmt, 0);
     sqlite3_bind_text(data->stmt, 1, login, strlen(login), SQLITE_STATIC);
-    if (sqlite3_step(data->stmt) != SQLITE_DONE) {
+    if (sqlite3_step(data->stmt) != SQLITE_ROW) {
         sqlite3_finalize(data->stmt);
-        pthread_mutex_unlock(&data->msg_mutex);
         return NULL;
     }
-    lang = (char *)sqlite3_column_text(data->stmt, 0);
+    lang = strdup((char *)sqlite3_column_text(data->stmt, 0));
     sqlite3_finalize(data->stmt);
-    pthread_mutex_unlock(&data->msg_mutex);
     return lang;
 }
 
@@ -74,5 +63,7 @@ char *mx_login_back(t_data *data, int status, char *login) {
     else
         cJSON_AddNumberToObject(send, "status", status);
     res = cJSON_Print(send);
+    mx_strdel(&tema);
+    mx_strdel(&lang);
     return res;
 }
