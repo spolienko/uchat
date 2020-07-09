@@ -5,9 +5,12 @@ void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
     char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
     char *msg = cJSON_GetObjectItemCaseSensitive(str, "pasword")->valuestring;
     int res = 0;
+    printf("login is:%s\n", user);
+    printf("password is:%s\n", msg);
 
     res = mx_check_login(data, user, msg);
     mx_strdel(&msg);
+    
     if (res == 1 || res == 2) {
         msg =  mx_login_back(data, true, user);
         mx_chat_create_session(data, user);
@@ -16,7 +19,6 @@ void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
         msg =  mx_login_back(data, false, user);
     tls_write(tlscon, msg, strlen(msg));
     mx_strdel(&user);// отправка ответа на tlscon -- соединение с клиентом
-    cJSON_Delete(str);
 }
 
 static char *get_user_tema(t_data *data, char *login) {

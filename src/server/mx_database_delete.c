@@ -28,7 +28,9 @@ int mx_check_login(t_data *data, char *login, char *pas) {
     if(sqlite3_step(data->stmt) != SQLITE_DONE) {
         sqlite3_finalize(data->stmt);
         pthread_mutex_unlock(&msg_mutex);
-        return mx_chat_create_user(data, login, pas);
+        int res = mx_chat_create_user(data, login, pas);
+        printf("res is:%d\n", res);
+        return res;
     }
     else {
         sqlite3_finalize(data->stmt);

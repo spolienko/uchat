@@ -51,6 +51,10 @@
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
 
+
+#include <gtk/gtk.h>
+
+
 #define MX_MAX_CONN 10
 
 /* ihumeniuk */
@@ -103,7 +107,7 @@ int mx_start_network(int port);
 
 /* client */
 
-void mx_report_tls_client(struct tls * tls_ctx, char * host);
+// void mx_report_tls_client(struct tls * tls_ctx, char * host);
 
 #endif
 

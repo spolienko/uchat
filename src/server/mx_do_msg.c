@@ -24,5 +24,4 @@ void mx_do_user_interface(t_data *data, char *buf) {
     char *lang = cJSON_GetObjectItemCaseSensitive(str, "lang")->valuestring;
 
     mx_chat_add_ui_data(data, user, tema, lang);
-    cJSON_Delete(str);
 }

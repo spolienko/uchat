@@ -33,7 +33,7 @@ SRC_CLIENT = main_client.c
 OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
 
-CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic 
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic `pkg-config --cflags --libs gtk+-3.0`
 
 LIBRESSL_A = ./libressl/tls/.libs/libtls.a \
 			 ./libressl/ssl/.libs/libssl.a \
@@ -77,7 +77,7 @@ $(LMXA):
 client: $(NAME_C)
 
 $(NAME_C): $(LMXA) $(OBJS_CLIENT)
-	@clang $(CFLAGS)  $(LMXA)   $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_CLIENT)  -o $@
+	@clang $(CFLAGS) cjson_lib.a $(LMXA)   $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_CLIENT)  -o $@
 	@printf "\r\33[2K$@\t\t   \033[32;1mcreated\033[0m\n"
 
 $(OBJD)/%.o: src/client/%.c $(INCS)

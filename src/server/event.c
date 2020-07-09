@@ -7,7 +7,7 @@ int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
     struct sockaddr_storage caddr;
     socklen_t clen = sizeof(caddr);
 
-    for(;;) {
+    for(int i= 0;;i++) {
         event = kevent(kq, NULL, 0, kEvent, 1, t);
         if (event == 0)
             continue ;

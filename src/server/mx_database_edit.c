@@ -25,14 +25,14 @@ int mx_chat_create_user(t_data *data, char *login, char *password) {
     sqlite3 *db = data->database;
     sqlite3_stmt *stmt = data->stmt;
     pthread_mutex_t msg_mutex = PTHREAD_MUTEX_INITIALIZER;
-    char *str = "INSERT INTO users VALUES (?, ?, ?, ?)";
+    char *str = "INSERT INTO users(login, password, tema, lang) VALUES (?1, ?2, ?3, ?4)";
 
     pthread_mutex_lock(&msg_mutex);
     sqlite3_prepare_v2(db, str, -1, &stmt, 0);
     sqlite3_bind_text(stmt, 1, login, strlen(login), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, "black", 5, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 4, "eng", 3, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, "black", strlen("black"), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, "eng", strlen("eng"), SQLITE_STATIC);
     if(sqlite3_step(stmt) != SQLITE_DONE) {
         sqlite3_finalize(stmt);
         pthread_mutex_unlock(&msg_mutex);
