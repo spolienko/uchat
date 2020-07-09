@@ -198,11 +198,11 @@ void do_sending(GtkWidget *widget, t_chat *chat) {
     (void)widget;
 }
 
-void first_init (t_login *logining, t_chat *chat) {
-    chat->login = logining->login;
-    chat->lang = logining->lang;
+void first_init (t_s *s, t_chat *chat) {
+    chat->login = s->logining->login;
+    chat->lang = s->logining->lang;
     chat->v_n = 0;
-    chat->theme = logining->theme;
+    chat->theme = s->logining->theme;
     chat->v_scroll = gtk_scrolled_window_new(0,0);
     chat->v_l_btn_ru = gtk_button_new_with_label("RUS");
     chat->v_l_btn_en = gtk_button_new_with_label("ENG");
@@ -330,17 +330,19 @@ void init_clicks (t_chat *chat) {
 
 
 
-void initing_chat (t_login *logining, t_chat *chat) {
-    first_init(logining, chat);
+void initing_chat (t_s *s, t_chat *chat) {
+    first_init(s, chat);
     second_init(chat);
     third_init(chat);
     init_clicks(chat);
 }
 
-void init_chatt(t_login *logining) {
+void init_chatt(t_s *s) {
     
     t_chat *chat = malloc(sizeof(t_chat));
-    initing_chat (logining, chat);
+    printf("%s\t%s\n",s->logining->lang, s->logining->theme);
+    
+    initing_chat (s, chat);
 
     gtk_box_pack_start(GTK_BOX(chat->vbox), chat->btns_b, TRUE, FALSE, 0);
     chat->c_v_window = gtk_widget_get_style_context(chat->v_window);
@@ -364,17 +366,13 @@ void init_chatt(t_login *logining) {
     g_signal_connect(chat->v_window,"destroy",G_CALLBACK(gtk_main_quit), NULL);
     gtk_scrolled_window_set_max_content_width ((GtkScrolledWindow *)chat->v_scroll, 500);
     gtk_window_set_title(GTK_WINDOW(chat->v_window), (const gchar *)"uchat");
-    printf("1\n");
     gtk_widget_show_all((GtkWidget *)chat->v_window);
-    printf("1\n");
 
-    // pthread_t thread_input;
-    // pthread_attr_t attr;
-    // pthread_attr_init(&attr);
-    // pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    // int tc = pthread_create(&thread_input, &attr, (void * _Nullable (* _Nonnull)(void * _Nullable))watcher_thread, chat);
-    // if (tc != 0)
-    //     printf("pthread_create error = %s\n", strerror(tc));
+   while (true)
+   {
+    
+   }
+   
 }
 
 typedef struct s_info {
@@ -946,7 +944,11 @@ void do_logining(GtkWidget *widget, t_s *s) {
         if (s->c->pfd[1].revents & POLLIN) {
             if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) break;
             printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
-            s->logining->login_in = 1;
+            cJSON *msg = cJSON_Parse(s->c->bufs);
+            s->logining->login_in = cJSON_GetObjectItemCaseSensitive(msg, "status")->valueint;
+            s->logining->lang = cJSON_GetObjectItemCaseSensitive(msg, "lang")->valuestring;
+            s->logining->theme = cJSON_GetObjectItemCaseSensitive(msg, "tema")->valuestring;
+
             return;
         }
         
@@ -956,11 +958,11 @@ void do_logining(GtkWidget *widget, t_s *s) {
 gboolean check_logining(t_s *s)
 {
     if(s->logining->login_in) {
-        s->logining->lang = "eng" ;
-        s->logining->theme = "black";
+        //s->logining->lang = "eng" ;
+        //s->logining->theme = "black";
         s->logining->login_in = 0;
         gtk_widget_hide(s->logining->window);
-        init_chatt(s->logining);
+        init_chatt(s);
         return G_SOURCE_REMOVE;
     }
     return G_SOURCE_CONTINUE;
