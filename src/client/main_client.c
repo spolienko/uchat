@@ -281,6 +281,34 @@ void third_init (t_chat *chat) {
 }
 
 
+
+
+void inf(GtkWidget *widget, t_chat *chat);
+
+
+
+void init_clicks (t_chat *chat) {
+    g_signal_connect(G_OBJECT(chat->v_bt_info), "clicked", G_CALLBACK(inf),
+        chat);
+    g_signal_connect(G_OBJECT(chat->v_bt_like), "clicked", G_CALLBACK(sen), (gpointer)0);
+    g_signal_connect(G_OBJECT(chat->v_bt_aut), "clicked", G_CALLBACK(sen), (gpointer)1);
+    g_signal_connect(G_OBJECT(chat->v_bt_s1), "clicked", G_CALLBACK(sen), (gpointer)2);
+    g_signal_connect(G_OBJECT(chat->v_bt_s2), "clicked", G_CALLBACK(sen), (gpointer)3);
+    g_signal_connect(G_OBJECT(chat->v_bt_s3), "clicked", G_CALLBACK(sen), (gpointer)4);
+    g_signal_connect(G_OBJECT(chat->v_bt_s4), "clicked", G_CALLBACK(sen), (gpointer)5);
+    g_signal_connect(G_OBJECT(chat->v_bt_s5), "clicked", G_CALLBACK(sen), (gpointer)6);
+    g_signal_connect(G_OBJECT(chat->v_bt_s6), "clicked", G_CALLBACK(sen), (gpointer)7);
+}
+
+
+
+void initing_chat (t_s *s, t_chat *chat) {
+    first_init(s, chat);
+    second_init(chat);
+    third_init(chat);
+    init_clicks(chat);
+}
+
 char *what_return(int gg) {
     if (gg == 0)
         return "\\love\\";
@@ -311,38 +339,84 @@ void sen(GtkWidget *widget, int gg){
     (void)widget;
 }
 
-void inf(GtkWidget *widget, t_chat *chat);
-
-
-
-void init_clicks (t_chat *chat) {
-    g_signal_connect(G_OBJECT(chat->v_bt_info), "clicked", G_CALLBACK(inf),
-        chat);
-    g_signal_connect(G_OBJECT(chat->v_bt_like), "clicked", G_CALLBACK(sen), (gpointer)0);
-    g_signal_connect(G_OBJECT(chat->v_bt_aut), "clicked", G_CALLBACK(sen), (gpointer)1);
-    g_signal_connect(G_OBJECT(chat->v_bt_s1), "clicked", G_CALLBACK(sen), (gpointer)2);
-    g_signal_connect(G_OBJECT(chat->v_bt_s2), "clicked", G_CALLBACK(sen), (gpointer)3);
-    g_signal_connect(G_OBJECT(chat->v_bt_s3), "clicked", G_CALLBACK(sen), (gpointer)4);
-    g_signal_connect(G_OBJECT(chat->v_bt_s4), "clicked", G_CALLBACK(sen), (gpointer)5);
-    g_signal_connect(G_OBJECT(chat->v_bt_s5), "clicked", G_CALLBACK(sen), (gpointer)6);
-    g_signal_connect(G_OBJECT(chat->v_bt_s6), "clicked", G_CALLBACK(sen), (gpointer)7);
-}
-
-
-
-void initing_chat (t_s *s, t_chat *chat) {
-    first_init(s, chat);
-    second_init(chat);
-    third_init(chat);
-    init_clicks(chat);
-}
-
 void init_chatt(t_s *s) {
     
     t_chat *chat = malloc(sizeof(t_chat));
     printf("%s\t%s\n",s->logining->lang, s->logining->theme);
     
-    initing_chat (s, chat);
+    // initing_chat (s, chat);
+    chat->login = s->logining->login;
+    chat->lang = s->logining->lang;
+    chat->v_n = 0;
+    chat->theme = s->logining->theme;
+    chat->v_scroll = gtk_scrolled_window_new(0,0);
+    chat->v_l_btn_ru = gtk_button_new_with_label("RUS");
+    chat->v_l_btn_en = gtk_button_new_with_label("ENG");
+    chat->v_t_btn_b = gtk_button_new_with_label("   ");
+    chat->v_t_btn_w = gtk_button_new_with_label("   ");
+    chat->vbox = gtk_box_new(TRUE, 0);
+    chat->top_b = gtk_box_new(FALSE, 0);
+    chat->scr_box = gtk_box_new(FALSE, 0);
+    chat->ent_box = gtk_box_new(FALSE, 0);
+    chat->btns_b = gtk_box_new(FALSE, 0);
+    chat->v_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    chat->cssProv = gtk_css_provider_new();
+
+    chat->v_listbox = gtk_list_box_new();
+    chat->v_main_e = gtk_entry_new();
+    chat->v_bt_e = gtk_button_new_with_label("Send");
+    chat->v_bt_info = gtk_button_new_with_label("Info");
+    chat->v_bt_like = gtk_button_new_with_label("Love");
+    chat->v_bt_aut = gtk_button_new_with_label(":()");
+    chat->v_bt_s1 = gtk_button_new_with_label("+");
+    chat->v_bt_s2 = gtk_button_new_with_label("sadness");
+    chat->v_bt_s3 = gtk_button_new_with_label("danger");
+    chat->v_bt_s4 = gtk_button_new_with_label("sad cat");
+    chat->v_bt_s5 = gtk_button_new_with_label("?");
+    chat->v_bt_s6 = gtk_button_new_with_label("hello");
+
+    gtk_box_pack_start(GTK_BOX(chat->top_b), chat->v_l_btn_ru, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->top_b), chat->v_l_btn_en, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->top_b), chat->v_t_btn_b, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->top_b), chat->v_t_btn_w, FALSE, TRUE, 0);
+    gtk_widget_set_size_request(chat->v_l_btn_ru,450,50);
+    gtk_widget_set_size_request(chat->v_l_btn_en,450,50);
+    gtk_widget_set_size_request(chat->v_t_btn_b,450,50);
+    gtk_widget_set_size_request(chat->v_t_btn_w,450,50);
+
+    gtk_box_pack_start(GTK_BOX(chat->vbox), chat->top_b, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->vbox), chat->scr_box, FALSE, TRUE, 0);
+
+    gtk_container_add(GTK_CONTAINER(chat->v_window), chat->vbox);
+    gtk_window_set_resizable((GtkWindow *)chat->v_window, FALSE);
+    gtk_box_pack_start(GTK_BOX(chat->scr_box), chat->v_scroll, TRUE, TRUE, 0);
+    gtk_widget_set_size_request(chat->v_scroll,1800,950);
+    gtk_box_pack_start(GTK_BOX(chat->ent_box), chat->v_main_e, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->ent_box), chat->v_bt_e, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->vbox), chat->ent_box, TRUE, FALSE, 0);
+    g_signal_connect(G_OBJECT(chat->v_bt_e), "clicked", G_CALLBACK(do_sending),
+        chat);
+    gtk_widget_set_size_request(chat->v_bt_e,200,50);
+    footer_btns_init (chat);
+    
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_info, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_like, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_aut, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_s1, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_s2, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_s3, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_s4, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_s5, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(chat->btns_b), chat->v_bt_s6, FALSE, TRUE, 0);
+    gtk_widget_set_size_request(chat->v_bt_info,200,50);
+    gtk_widget_set_size_request(chat->v_bt_like,200,50);
+    gtk_widget_set_size_request(chat->v_bt_aut,200,50);
+    gtk_widget_set_size_request(chat->v_bt_s1,200,50);
+    gtk_widget_set_size_request(chat->v_bt_s2,200,50);
+    gtk_widget_set_size_request(chat->v_bt_s3,200,50);
+    gtk_widget_set_size_request(chat->v_bt_s4,200,50);
+    gtk_widget_set_size_request(chat->v_bt_s5,200,50);
+    gtk_widget_set_size_request(chat->v_bt_s6,200,50);
 
     gtk_box_pack_start(GTK_BOX(chat->vbox), chat->btns_b, TRUE, FALSE, 0);
     chat->c_v_window = gtk_widget_get_style_context(chat->v_window);
@@ -362,6 +436,18 @@ void init_chatt(t_s *s) {
     chat->c_v_bt_s4 = gtk_widget_get_style_context(chat->v_bt_s4);
     chat->c_v_bt_s5 = gtk_widget_get_style_context(chat->v_bt_s5);
     chat->c_v_bt_s6 = gtk_widget_get_style_context(chat->v_bt_s6);
+
+    g_signal_connect(G_OBJECT(chat->v_bt_info), "clicked", G_CALLBACK(inf),
+        chat);
+    g_signal_connect(G_OBJECT(chat->v_bt_like), "clicked", G_CALLBACK(sen), (gpointer)0);
+    g_signal_connect(G_OBJECT(chat->v_bt_aut), "clicked", G_CALLBACK(sen), (gpointer)1);
+    g_signal_connect(G_OBJECT(chat->v_bt_s1), "clicked", G_CALLBACK(sen), (gpointer)2);
+    g_signal_connect(G_OBJECT(chat->v_bt_s2), "clicked", G_CALLBACK(sen), (gpointer)3);
+    g_signal_connect(G_OBJECT(chat->v_bt_s3), "clicked", G_CALLBACK(sen), (gpointer)4);
+    g_signal_connect(G_OBJECT(chat->v_bt_s4), "clicked", G_CALLBACK(sen), (gpointer)5);
+    g_signal_connect(G_OBJECT(chat->v_bt_s5), "clicked", G_CALLBACK(sen), (gpointer)6);
+    g_signal_connect(G_OBJECT(chat->v_bt_s6), "clicked", G_CALLBACK(sen), (gpointer)7);
+
     gtk_container_add(GTK_CONTAINER(chat->v_scroll), chat->v_listbox);
     g_signal_connect(chat->v_window,"destroy",G_CALLBACK(gtk_main_quit), NULL);
     gtk_scrolled_window_set_max_content_width ((GtkScrolledWindow *)chat->v_scroll, 500);

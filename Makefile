@@ -28,7 +28,7 @@ SRC_SERVER = main.c \
 			mx_do_msg.c \
 			mx_do_login.c \
              
-SRC_CLIENT = main_client.c
+SRC_CLIENT = new_main_client.c
 
 OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
