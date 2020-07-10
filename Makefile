@@ -27,6 +27,7 @@ SRC_SERVER = main.c \
 			mx_database_init.c \
 			mx_do_msg.c \
 			mx_do_login.c \
+			mx_chat_send_history.c \
              
 SRC_CLIENT = new_main_client.c
 

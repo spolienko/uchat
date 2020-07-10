@@ -4,7 +4,7 @@ static int check_kind(char *buf) {
     cJSON *str = cJSON_Parse(buf);
     char *kind = cJSON_GetObjectItemCaseSensitive(str, "kind")->valuestring;
     int res = 0; 
-    printf("%s\n",buf);
+
     if (mx_strcmp(kind, "login") == 0)
         res = 1;
     else if (mx_strcmp(kind, "msg") == 0)

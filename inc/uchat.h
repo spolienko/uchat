@@ -82,6 +82,7 @@ int mx_get_msg_id(t_data *data, char *login, char *time, char *msg);
 void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang);
 void mx_do_user_interface(t_data *data, char *buf);
 char *mx_login_back(t_data *data, int status, char *login);
+void mx_chat_send_history(t_data *data, struct tls *tlscon);
 
 /* server */
 

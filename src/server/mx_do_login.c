@@ -15,7 +15,10 @@ void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
     else if (res == 3 || res == 0)
         msg =  mx_login_back(data, false, user);
     tls_write(tlscon, msg, strlen(msg));
+    if (res == 1 || res == 2)
+        mx_chat_send_history(data, tlscon);
     mx_strdel(&user);
+    mx_strdel(&msg);
 }
 
 static char *get_user_tema(t_data *data, char *login) {
