@@ -3,7 +3,6 @@
 *.out
 *.exe
 *.swp
-*.a
 *.o
 ._DS_Store
 chat.sqlite
