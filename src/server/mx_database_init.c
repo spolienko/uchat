@@ -18,13 +18,6 @@ static char *create_table_messages() {
     return str3;
 }    /* Тут таблицы: ID, Время, Логин, Текст.*/
 
-static char *create_table_session() {
-    char *str = "CREATE TABLE sessions(login varchar(32) NOT NULL)";
-
-    return str;
-}   /* Тут таблицa: Логин.*/
-
-
 void mx_database_init(t_data *data) {
     char *str = create_table_users();
 
@@ -38,10 +31,10 @@ void mx_database_init(t_data *data) {
     mx_strdel(&str);
     str = create_table_messages();
     sqlite3_exec(data->database, str, 0, 0, NULL);
-    mx_strdel(&str);
-    str = create_table_session();
     sqlite3_exec(data->database, "DROP TABLE IF EXISTS sessions", 0, 0, NULL);
-    sqlite3_exec(data->database, str, 0, 0, NULL);
+    sqlite3_exec(data->database, "CREATE TABLE sessions(login varchar(32)"
+                " NOT NULL)", 0, 0, NULL);
+    mx_strdel(&str);
 }
 
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg) {
