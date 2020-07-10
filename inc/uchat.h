@@ -52,7 +52,6 @@
 #include "../libmx/inc/libmx.h"
 
 
-#include <gtk/gtk.h>
 
 
 #define MX_MAX_CONN 10

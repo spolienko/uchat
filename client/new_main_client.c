@@ -497,7 +497,7 @@ void init_chatt(t_s *s) {
     mx_init_chat1(s);
     mx_init_chat2(s);
     mx_init_chat3(s);
-    mx_init_chat4(s);
+    
     
     
 

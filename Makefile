@@ -13,6 +13,8 @@ LBMXD = libmx
 LIBMX = libmx
 
 INCS = inc/uchat.h
+INCS2 = inc/uchat.h
+
 
 SRC_SERVER = main.c \
 			demon.c \
@@ -34,7 +36,12 @@ SRC_CLIENT = new_main_client.c
 OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
 
-CFLAGS = -std=c11 -Wall -Wextra -Wpedantic `pkg-config --cflags --libs gtk+-3.0`
+CFLAGS = -std=c11  -Wall -Wextra -Werror -Wpedantic \
+		 	-Wno-pedantic -Wno-unused-command-line-argument \
+		 	`pkg-config --cflags --libs gtk+-3.0`
+
+CFLAGS2 = -std=c11 -Wall -Wextra -Wpedantic -Werror
+
 
 LIBRESSL_A = ./libressl/tls/.libs/libtls.a \
 			 ./libressl/ssl/.libs/libssl.a \
@@ -57,11 +64,11 @@ $(CJSON):
 
 $(NAME_S): $(LMXA) $(OBJS_SERVER)
 	@make -sC ./cjson
-	@clang $(CFLAGS) -lsqlite3 cjson_lib.a $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
+	@clang $(CFLAGS2) -lsqlite3 cjson_lib.a $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
 	@printf "\r\33[2K$@\t   \033[32;1mcreated\033[0m\n"
 
 $(OBJD)/%.o: src/server/%.c $(INCS)
-	@clang $(CFLAGS)  -o $@ -c $< -I$(INCD) -I$(LMXI)
+	@clang $(CFLAGS2)  -o $@ -c $< -I$(INCD) -I$(LMXI)
 	@printf "\r\33[2K\033[37;1mcompile \033[0m$(<:$(SRCD)/%.c=%) "
 
 
@@ -81,7 +88,7 @@ $(NAME_C): $(LMXA) $(OBJS_CLIENT)
 	@clang $(CFLAGS) cjson_lib.a $(LMXA)   $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_CLIENT)  -o $@
 	@printf "\r\33[2K$@\t\t   \033[32;1mcreated\033[0m\n"
 
-$(OBJD)/%.o: src/client/%.c $(INCS)
+$(OBJD)/%.o: src/client/%.c $(INCS2)
 	@clang $(CFLAGS)  -o $@ -c $< -I$(INCD) -I$(LMXI)
 	@printf "\r\33[2K\033[37;1mcompile \033[0m$(<:$(SRCD)/%.c=%) "
 

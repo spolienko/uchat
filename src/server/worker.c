@@ -53,8 +53,8 @@ int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
         buf[rc] = 0;
         msg = do_message(data, buf, (struct tls *)conn->connection_array[kEvent->ident]);
         for(int i = 3; i <= MX_MAX_CONN; i++)
-            if (msg != NULL && (struct tls *)conn->connection_array[i] != NULL &&
-            (struct tls *)conn->connection_array[i] != (struct tls *)conn->connection_array[kEvent->ident]) {
+            if (msg != NULL && (struct tls *)conn->connection_array[i] != NULL ) {
+                // &&            (struct tls *)conn->connection_array[i] != (struct tls *)conn->connection_array[kEvent->ident]
                 printf("sending messege to %d\n", i);
                 tls_write((struct tls *)conn->connection_array[i], msg, strlen(msg));
             }
