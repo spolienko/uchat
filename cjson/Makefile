@@ -9,7 +9,7 @@ R_CFLAGS = $(PIC_FLAGS) -pedantic -Wall -Werror -Wstrict-prototypes -Wwrite-stri
 #library file extensions
 STATIC = a
 
-CJSON_STATIC = ../$(CJSON_LIBNAME).$(STATIC)
+CJSON_STATIC = $(CJSON_LIBNAME).$(STATIC)
 
 .PHONY: all static clean uninstall reinstall
 
@@ -20,17 +20,16 @@ static: $(CJSON_STATIC)
 $(CJSON_STATIC): $(CJSON_OBJ)
 	@cp cJSON.h ../inc/
 	@$(AR) rcs $@ $<
-	@printf "\033[32;1m$(notdir $@) created\033[0m\n"
+	@cp $(CJSON_STATIC) ../
 
 $(CJSON_OBJ): cJSON.c cJSON.h
 	@$(CC) -c $(R_CFLAGS) $<
 
 uninstall: clean
-	@rm -rf ../cjson_lib.a
+	@rm -rf cjson_lib.a
 
 clean:
 	@rm -rf cJSON.o
-	@rm -rf ../inc/cJSON.h
 
 reinstall: uninstall all
 

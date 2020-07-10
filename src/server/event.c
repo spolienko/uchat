@@ -1,12 +1,13 @@
 #include "uchat.h"
 
-void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
+void mx_listen_for_events(t_data *data, int kq,
+int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
     int event;
     int client;
     struct sockaddr_storage caddr;
     socklen_t clen = sizeof(caddr);
 
-    for(;;) {
+    for(int i= 0;;i++) {
         event = kevent(kq, NULL, 0, kEvent, 1, t);
         if (event == 0)
             continue ;
@@ -54,7 +55,7 @@ void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timesp
                 tls_free(conn->connection_array[kEvent->ident]);
             }
             else {
-                if((mx_client_worker(conn->connection_array[kEvent->ident])) == -1) {
+                if((mx_client_worker(conn, kEvent, data) == -1)) {
                     printf("error");
                     break ;
                 }

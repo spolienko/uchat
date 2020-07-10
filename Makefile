@@ -25,13 +25,15 @@ SRC_SERVER = main.c \
 			mx_database_delete.c \
 			mx_database_edit.c \
 			mx_database_init.c \
+			mx_do_msg.c \
+			mx_do_login.c \
              
-SRC_CLIENT = main_client.c
+SRC_CLIENT = new_main_client.c
 
 OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
 
-CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic 
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic `pkg-config --cflags --libs gtk+-3.0`
 
 LIBRESSL_A = ./libressl/tls/.libs/libtls.a \
 			 ./libressl/ssl/.libs/libssl.a \
@@ -50,11 +52,11 @@ all: install
 server: $(CJSON) $(NAME_S)
 
 $(CJSON):
-	@make -sC ./cjson/
+	@make -sC ./cjson
 
 $(NAME_S): $(LMXA) $(OBJS_SERVER)
-
-	@clang $(CFLAGS) -lsqlite3 $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
+	@make -sC ./cjson
+	@clang $(CFLAGS) -lsqlite3 cjson_lib.a $(LMXA) $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_SERVER) -o $@
 	@printf "\r\33[2K$@\t   \033[32;1mcreated\033[0m\n"
 
 $(OBJD)/%.o: src/server/%.c $(INCS)
@@ -69,12 +71,13 @@ $(OBJD):
 	@mkdir -pv $@
 
 $(LMXA):
+	@make -sC ./cjson
 	@make -sC ./libmx/
 
 client: $(NAME_C)
 
 $(NAME_C): $(LMXA) $(OBJS_CLIENT)
-	@clang $(CFLAGS)  $(LMXA)   $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_CLIENT)  -o $@
+	@clang $(CFLAGS) cjson_lib.a $(LMXA)   $(LIBRESSL_H) $(LIBRESSL_A) $(OBJS_CLIENT)  -o $@
 	@printf "\r\33[2K$@\t\t   \033[32;1mcreated\033[0m\n"
 
 $(OBJD)/%.o: src/client/%.c $(INCS)
@@ -89,8 +92,11 @@ clean:
 # 	@make -sC $(LBMXD) clean
 	@rm -rf $(OBJD)
 	@rm -rf cjson_lib.a
+	@rm -rf ./cjson/cjson_lib.a
+	@rm -rf uchat_server.log
 	@printf "$(OBJD)\t\t   \033[31;1mdeleted\033[0m\n"
 	@printf "cjson library\t   \033[31;1mdeleted\033[0m\n"
+	@printf "uchat_server.log\t   \033[31;1mdeleted\033[0m\n"
 
 uninstall: clean
 # 	@make -sC $(LBMXD) uninstall

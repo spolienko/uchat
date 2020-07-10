@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
+#include <time.h>
 
 #include "../libressl/include/tls.h"
 #include "../libressl/include/openssl/evp.h"
@@ -50,9 +51,13 @@
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
 
+
+#include <gtk/gtk.h>
+
+
 #define MX_MAX_CONN 10
 
-/* database */
+/* ihumeniuk */
 
 typedef struct s_data {
     sqlite3 *database;
@@ -62,14 +67,21 @@ typedef struct s_data {
 } t_data;
 
 void mx_database_init(t_data *data);
+char *mx_chat_get_user_password(t_data *data, char *login);
+int mx_chat_create_user(t_data *data, char *login, char *password);
+void mx_chat_create_session(t_data *data, char *login);
+char * mx_chat_new_message(t_data *data, char *login, char *msg);
+//void mx_chat_delete_last_message(t_data data, const char *login);
+void mx_chat_delete_session(t_data *data, const char *login);
 
-char *mx_chat_get_user_password(t_data data, char *login);
-int mx_chat_create_user(t_data data, char *login, char *password, char *tema,
-                        char *lang);
-void mx_chat_create_session(t_data data, char *login);
-void mx_chat_new_message(t_data data, const char *login, const char *msg);
-void mx_chat_delete_last_message(t_data data, const char *login);
-void mx_chat_delete_session(t_data data, const char *login);
+int mx_check_login(t_data *data, char *login, char *pas);
+void mx_do_login(t_data *data, char *buf, struct tls *tls);
+char *mx_time_to_str(void);
+char *mx_do_msg(t_data *data, char *buf);
+int mx_get_msg_id(t_data *data, char *login, char *time, char *msg);
+void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang);
+void mx_do_user_interface(t_data *data, char *buf);
+char *mx_login_back(t_data *data, int status, char *login);
 
 /* server */
 
@@ -79,11 +91,10 @@ typedef struct s_connection {
     struct tls *tls;
 } t_connection;
 
-void mx_start_server(int socket, t_connection *conn);
+void mx_start_server(t_data *data, int socket, t_connection *conn);
 void mx_demonize(char *logfile);
-int mx_client_worker(struct tls *tls_accept);
-void mx_listen_for_events(int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn);
-void mx_start_server(int socket, t_connection *conn);
+int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data);
+void mx_listen_for_events(t_data *data, int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn);
 struct tls_config *mx_tls_config_new(void);
 int mx_tls_config_parse_proto(unsigned int *p);
 int mx_tls_config_set_proto(struct tls_config *conf, unsigned int p);
@@ -96,7 +107,7 @@ int mx_start_network(int port);
 
 /* client */
 
-void mx_report_tls_client(struct tls * tls_ctx, char * host);
+// void mx_report_tls_client(struct tls * tls_ctx, char * host);
 
 #endif
 
