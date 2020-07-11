@@ -59,6 +59,7 @@ typedef struct s_ct {
     char *theme;
     char window_title[100];
     int v_n;
+    int delete_id;
     GtkWidget *v_window;
     GtkWidget *v_main_grid;
     GtkWidget *v_l_btn_ru;
@@ -124,6 +125,7 @@ typedef struct s_info {
     char *author;
     char *body;
     char *timebuf;
+    int id;
 }              t_info;
 
 int mx_exit_chat(t_s *s) {
@@ -136,14 +138,30 @@ int mx_exit_chat(t_s *s) {
     return 0;
 }
 
-char *help_str(){
+char *help_str_eng() {
     char *sss = "Rules: max str len 100 chars\n"
-        "Comands write only: \\cmd\\"
-        "Editing: \\123\\ - font-size, \\rol\\ - color, \\inb\\ - fonts\n"
-        "Stickers: \\++++\\,\n"
-        "Special cmds: \\k[id]\\";
-    
+        "Comands write only: |cmd|"
+        "Editing: |123| - font-size, |rol| - color, |inb| - fonts\n"
+        "Stickers: |++++|,\n"
+        "Special cmds: |k[id]|";
     return sss;
+}
+
+char *help_str_rus() {
+    char *sss = "Ychi English\n"
+        "Ychi EnglishComands write only: |cmd|\n"
+        "Ychi EnglishEditing: |123| - font-size, |rol| - color, |inb| - fonts\n"
+        "Ychi EnglishStickers: |++++|,\n"
+        "Ychi EnglishSpecial cmds: |k[id]|";
+    return sss;
+}
+
+char *help_str(t_s *s){
+    if (!strcmp(s->h->lang, "eng"))
+        return help_str_eng();
+    if (!strcmp(s->h->lang, "rus"))
+        return help_str_rus();
+    return help_str_eng();        
 }
 
 bool mx_isspace(char c) {
@@ -204,7 +222,7 @@ void set_class_for_help(t_inf_row *inf) {
 }
 
 void init_help(t_inf_row *inf, t_s *s) {
-    char *str = help_str();
+    char *str = help_str(s);
 
     inf->v_row = gtk_list_box_row_new();
     gtk_list_box_insert((GtkListBox *)s->h->v_listbox, inf->v_row, s->h->v_n);
@@ -235,23 +253,60 @@ void closeApp(GtkWidget *window, t_s *s)
     gtk_main_quit();
 }
 
+char *get_cmd(char *str) {
+    int arr[300];
+    int arrr[2] = {0, 0};
+
+    arr[0] = 0;
+    arr[1] = 0;
+    while (str[arrr[1]] != '\0') {
+        if (str[arrr[1]] == '|') {
+            arr[arrr[0]] = arrr[1];
+            arrr[0]++;
+        }
+        arrr[1]++;
+    }
+    return strndup(str + arr[0], arr[1] + 1);
+}
+
+int check_on_cmd(char *str) {
+    char *strr = get_cmd(str);
+    if (!strcmp(strr, "|love|"))
+        return 1;
+    if (!strcmp(strr, "|aut|"))
+        return 2;
+    if (!strcmp(strr, "|++++|"))
+        return 3;
+    if (!strcmp(strr, "|sadness|"))
+        return 4;
+    if (!strcmp(strr, "|danger|"))
+        return 5;
+    if (!strcmp(strr, "|sad_cat|"))
+        return 6;
+    if (!strcmp(strr, "|????|"))
+        return 7;
+    if (!strcmp(strr, "|hello|"))
+        return 8;
+    return 0;
+}
+
 char *what_return(int gg) {
     if (gg == 0)
-        return "\\love\\";
+        return "|love|";
     if (gg == 1)
-        return "\\aut\\";
+        return "|aut|";
     if (gg == 2)
-        return "\\++++\\";
+        return "|++++|";
     if (gg == 3)
-        return "\\sadness\\";
+        return "|sadness|";
     if (gg == 4)
-        return "\\danger\\";
+        return "|danger|";
     if (gg == 5)
-        return "\\sad_cat\\";
+        return "|sad_cat|";
     if (gg == 6)
-        return "\\????\\";
+        return "|????|";
     if (gg == 7)
-        return "\\hello\\";
+        return "|hello|";
     return "err";
 } 
 
@@ -285,17 +340,59 @@ void init_row(t_row *row, t_info *inf, t_s *s) {
     s->h->v_n++;
     row->v_hrow = gtk_box_new(FALSE, 0);
     row->v_taa_box = gtk_box_new(TRUE, 0);
-
     gtk_container_add(GTK_CONTAINER(row->v_row), row->v_hrow);
     row->v_author = gtk_label_new(inf->author);
-    gtk_box_pack_start(GTK_BOX(row->v_taa_box), row->v_author, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(row->v_author,250,40);
-    gtk_label_set_xalign((GtkLabel *)row->v_author, 0.5);
+    gtk_box_pack_start(GTK_BOX(row->v_taa_box), row->v_author,
+                       FALSE, FALSE, 0);
+    gtk_widget_set_size_request(row->v_author,250,30);
     row->v_time = gtk_label_new(inf->timebuf);
-    gtk_box_pack_start(GTK_BOX(row->v_taa_box), row->v_time, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(row->v_time,250,40);
-    gtk_label_set_xalign((GtkLabel *)row->v_time, 0.5);
+    gtk_box_pack_start(GTK_BOX(row->v_taa_box), row->v_time, FALSE,
+                               FALSE, 0);
+    gtk_widget_set_size_request(row->v_time,250,30);
     gtk_container_add(GTK_CONTAINER(row->v_hrow), row->v_taa_box);
+}
+
+//X
+typedef struct s_for_click {
+    t_row *row;
+    t_info *inf;
+    t_s *s;
+}              t_for_click;
+
+void delete (GtkWidget *widget, t_for_click *c) {
+    // gtk_container_remove ((GtkContainer *)c->s->h->v_listbox, c->row->v_row);
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "delete");
+    cJSON_AddStringToObject(send, "login", c->s->h->login);
+    cJSON_AddNumberToObject(send, "id", c->inf->id);
+    char *res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(c->s->c->tls, res, strlen(res) + 1);
+    (void)widget;
+}
+
+void set_class_for_X(t_row *row, t_info *inf, t_s *s){
+    row->c_v_bt_del = gtk_widget_get_style_context(row->v_bt_del);
+    gtk_style_context_add_class (row->c_v_bt_del, "X");
+    (void)inf;
+    (void)s;
+}
+
+void print_X(t_row *row, t_info *inf, t_s *s) {
+    if(!strcmp(inf->author, s->h->login)) {
+        t_for_click *c = malloc(sizeof(t_for_click));
+
+        row->v_bt_del = gtk_button_new_with_label("X");
+        gtk_widget_set_name(row->v_bt_del, "X");
+        gtk_box_pack_start(GTK_BOX(row->v_hrow), 
+        row->v_bt_del, FALSE, FALSE, 0);
+        set_class_for_X(row, inf, s);
+        c->row = row;
+        c->inf = inf;
+        c->s = s;
+        g_signal_connect(G_OBJECT(row->v_bt_del), "clicked", G_CALLBACK(delete), c);
+    }
 }
 
 void end_initing(t_row *row, t_info *inf, t_s *s) {
@@ -305,105 +402,123 @@ void end_initing(t_row *row, t_info *inf, t_s *s) {
     // if(!check_on_cmd(inf->body))
     //     gtk_label_set_xalign((GtkLabel *)row->v_body, 0.04);
     gtk_widget_set_size_request(row->v_body,80,30);
-    // print_X(row, inf, chat);
+    print_X(row, inf, s);
     // set_class_for_elem(row, inf, chat);
+}
+
+void do_print_img(t_row *row, t_info *inf, GdkPixbuf *pixbuf){
+    if (check_on_cmd(inf->body) == 7)
+        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/?.png",
+            340, 340, TRUE, NULL);
+    if (check_on_cmd(inf->body) == 8)
+        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/hello.png",
+            340, 340, TRUE, NULL);
+    if (check_on_cmd(inf->body) == 2)
+        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/aut.jpg",
+            250, 250, TRUE, NULL);
+    row->v_body = gtk_image_new_from_pixbuf(pixbuf);
+}
+
+void print_img(t_row *row, t_info *inf) {
+    GdkPixbuf *pixbuf;
+
+    if (check_on_cmd(inf->body) == 3)
+        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/+.png", 
+            340, 340, TRUE, NULL);
+    if (check_on_cmd(inf->body) == 4)
+        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/sadness.png", 
+            340, 340, TRUE, NULL);
+    if (check_on_cmd(inf->body) == 5)
+        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/danger.png",
+            270, 270, TRUE, NULL);
+    if (check_on_cmd(inf->body) == 6)
+        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/sad_cat.png",
+            390, 390, TRUE, NULL);
+    do_print_img(row, inf, pixbuf);
+}
+
+
+char *love(){
+    char *message = "___$$$$$$$$______$$$$$$$$$\n"
+        "_$$$$$$$$$$$$__$$$$$$$__$$$$\n"
+        "$$$$$$$$$$$$$$$$$$$$$$$$__$$$\n"
+        "$$$$$$$$$$$$$$$$$$$$$$$$__$$$\n"
+        "$$$$$$$$$$$$$$$$$$$$$$$$__$$$\n"
+        "_$$$$$$$$$$$$$$$$$$$$$$__$$$\n"
+        "___$$$$$$$$$$$$$$$$$$$$$$$\n"
+        "______$$$$$$$$$$$$$$$$$\n"
+        "________$$$$$$$$$$$$$\n"
+        "___________$$$$$$$\n"
+        "_____________$$$\n"
+        "______________$\n";
+
+    return message;
+}
+
+void print_text(t_row *row, t_info *inf) {
+    if (check_on_cmd(inf->body) == 1)
+        row->v_body = gtk_label_new(love());
+}
+
+void print_cmd(t_row *row, t_info *inf) {
+    if (check_on_cmd(inf->body) > 1)
+        print_img(row, inf);
+    if (check_on_cmd(inf->body) == 1)
+        print_text(row, inf);
 }
 
 void create_row(t_info *inf, t_s *s) {   
     t_row *row = malloc(sizeof(t_row));
 
     init_row(row, inf, s);
-    // if (check_on_cmd(inf->body)) {
-    //     print_cmd(row, inf, chat);
-    // }
-    // else if (!check_on_cmd(inf->body)) {
+    if (check_on_cmd(inf->body)) {
+        print_cmd(row, inf);
+    }
+    else if (!check_on_cmd(inf->body)) {
         // char *new_body = get_new_body(inf->body);
         row->v_body = gtk_label_new(inf->body);
-    // }
+    }
     end_initing(row, inf, s);
     gtk_widget_show_all(s->h->v_window);
 }
 
-gboolean check_chat(t_s *s)
-{
-     bzero(s->c->bufs, 1000);
-        bzero(s->c->bufc, 1000);
+void create_msg(t_s *s, cJSON *msg) {
+    t_info *inf = malloc(sizeof(t_info));
+    
+    inf->author = cJSON_GetObjectItemCaseSensitive(msg, "login")->valuestring;
+    inf->body = cJSON_GetObjectItemCaseSensitive(msg, "msg")->valuestring;
+    inf->timebuf = cJSON_GetObjectItemCaseSensitive(msg, "time")->valuestring;
+    inf->id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
+    create_row(inf, s);
+}
 
-        poll(s->c->pfd, 2, -1);
-        // if (s->c->pfd[0].revents & POLLIN) {
-        //     int q = read(0, s->c->bufc, 1000);
-        //     printf("%d\n",q);
-        //     tls_write(s->c->tls, s->c->bufc, q);
-        // }
+void delete_msg(t_s *s, cJSON *msg) {
+    s->h->delete_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
+    printf("%d\n", s->h->delete_id);
+}
 
-        if (s->c->pfd[1].revents & POLLIN) {
-            if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) return G_SOURCE_CONTINUE;
-            // printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
-            // printf("%s\n",s->c->bufs);
-            
+void check_mesage_from_serv(t_s *s, cJSON *msg) {
+    char *ch = cJSON_GetObjectItemCaseSensitive(msg, "kind")->valuestring;
 
-            // s->l->login_in = cJSON_GetObjectItemCaseSensitive(msg, "status")->valueint;
-            // s->l->lang = cJSON_GetObjectItemCaseSensitive(msg, "lang")->valuestring;
-            // s->l->theme = cJSON_GetObjectItemCaseSensitive(msg, "tema")->valuestring;
-            return G_SOURCE_REMOVE; 
-        }
-    return G_SOURCE_CONTINUE;
+    if (!strcmp(ch, "msg"))
+        create_msg(s, msg);
+    if (!strcmp(ch, "delete"))
+        delete_msg(s, msg);
 }
 
 
 void watcher_thread(t_s *s) {
-    // message_request_history(10);
-    // while(1) {
-    //     t_info *inf = malloc(sizeof(t_info));
-    //     struct timeval tv;
-    //     int k = message_receive(&tv, &inf->author, &inf->body);
-    //     struct tm *nowtm;
-
-    //     if (auditor_watcher(inf, k) == 1)
-    //         continue;
-    //     else if (auditor_watcher(inf, k) == 0)
-    //         break;
-    //     if(tv.tv_sec) {
-    //         nowtm = localtime(&tv.tv_sec);
-    //         strftime(inf->timebuf, 64, "[%d.%m.%Y %H:%M:%S]", nowtm);
-    //     }
-    //     else
-    //         *inf->timebuf = 0;
-    //     create_row(inf, chat);
-    // }
-
-    while (true)
-    {
+    while (true) {
         bzero(s->c->bufs, 1000);
-        bzero(s->c->bufc, 1000);
-
         poll(s->c->pfd, 2, -1);
-        // if (s->c->pfd[0].revents & POLLIN) {
-        //     int q = read(0, s->c->bufc, 1000);
-        //     printf("%d\n",q);
-        //     tls_write(s->c->tls, s->c->bufc, q);
-        // }
-
         if (s->c->pfd[1].revents & POLLIN) {
-            
-            if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) break;
-            // printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
-            t_info *inf = malloc(sizeof(t_info));
+            if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) 
+                break;
+            printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
             cJSON *msg = cJSON_Parse(s->c->bufs);
-            inf->author = cJSON_GetObjectItemCaseSensitive(msg, "login")->valuestring;
-            inf->body = cJSON_GetObjectItemCaseSensitive(msg, "msg")->valuestring;
-            inf->timebuf = cJSON_GetObjectItemCaseSensitive(msg, "time")->valuestring;
-            create_row(inf, s);
-            // printf("%s\n",s->c->bufs);
-            // cJSON *msg = cJSON_Parse(s->c->bufs);
-            // s->l->login_in = cJSON_GetObjectItemCaseSensitive(msg, "status")->valueint;
-            // s->l->lang = cJSON_GetObjectItemCaseSensitive(msg, "lang")->valuestring;
-            // s->l->theme = cJSON_GetObjectItemCaseSensitive(msg, "tema")->valuestring;
+            check_mesage_from_serv(s, msg);
         }
     }
-
-
-    return;
 }
 
 
@@ -514,8 +629,7 @@ void mx_3_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->btns_b, TRUE, FALSE, 0);
 }
 
-
-void set_white(t_s *s) {
+void mx_remove_class_black(t_s *s) {
     gtk_style_context_remove_class (s->h->c_v_l_btn_ru, "black");
     gtk_style_context_remove_class (s->h->c_v_l_btn_en, "black");
     gtk_style_context_remove_class (s->h->c_v_scroll, "black");
@@ -532,7 +646,28 @@ void set_white(t_s *s) {
     gtk_style_context_remove_class (s->h->c_v_bt_s6, "black");
     gtk_style_context_remove_class (s->h->c_v_t_btn_b, "black");
     gtk_style_context_remove_class (s->h->c_v_t_btn_w, "black");
+}
 
+void mx_remove_class_white(t_s *s) {
+    gtk_style_context_remove_class (s->h->c_v_l_btn_ru, "white");
+    gtk_style_context_remove_class (s->h->c_v_l_btn_en, "white");
+    gtk_style_context_remove_class (s->h->c_v_scroll, "white");
+    gtk_style_context_remove_class (s->h->c_v_main_e, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_e, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_like, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_aut, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_info, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s1, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s2, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s3, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s4, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s5, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s6, "white");
+    gtk_style_context_remove_class (s->h->c_v_t_btn_b, "white");
+    gtk_style_context_remove_class (s->h->c_v_t_btn_w, "white");
+}
+
+void mx_add_class_white(t_s *s) {
     gtk_style_context_add_class (s->h->c_v_l_btn_ru, "white");
     gtk_style_context_add_class (s->h->c_v_l_btn_en, "white");
     gtk_style_context_add_class (s->h->c_v_scroll, "white");
@@ -551,24 +686,7 @@ void set_white(t_s *s) {
     gtk_style_context_add_class (s->h->c_v_t_btn_w, "white");
 }
 
-void set_black(t_s *s) {
-    gtk_style_context_remove_class (s->h->c_v_l_btn_ru, "white");
-    gtk_style_context_remove_class (s->h->c_v_l_btn_en, "white");
-    gtk_style_context_remove_class (s->h->c_v_scroll, "white");
-    gtk_style_context_remove_class (s->h->c_v_main_e, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_e, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_like, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_aut, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_info, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s1, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s2, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s3, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s4, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s5, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s6, "white");
-    gtk_style_context_remove_class (s->h->c_v_t_btn_b, "white");
-    gtk_style_context_remove_class (s->h->c_v_t_btn_w, "white");
-
+void mx_add_class_black(t_s *s) {
     gtk_style_context_add_class (s->h->c_v_l_btn_ru, "black");
     gtk_style_context_add_class (s->h->c_v_l_btn_en, "black");
     gtk_style_context_add_class (s->h->c_v_scroll, "black");
@@ -587,6 +705,35 @@ void set_black(t_s *s) {
     gtk_style_context_add_class (s->h->c_v_t_btn_w, "black");
 }
 
+void set_white(t_s *s) {
+    mx_remove_class_black(s);
+    mx_add_class_white(s);
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "ui");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "tema", "white");
+    cJSON_AddStringToObject(send, "lang", s->h->lang);
+    char *res = cJSON_Print(send);
+
+    tls_write(s->c->tls, res, strlen(res) + 1);
+}
+
+
+void set_black(t_s *s) {
+    mx_remove_class_white(s);
+    mx_add_class_black(s);
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "ui");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "tema", "black");
+    cJSON_AddStringToObject(send, "lang", s->h->lang);
+    char *res = cJSON_Print(send);
+
+    tls_write(s->c->tls, res, strlen(res) + 1);
+}
+
 void set_standart_style(t_s *s) {
     gtk_style_context_add_class (s->h->c_v_t_btn_b, "black_theme");
     gtk_style_context_add_class (s->h->c_v_t_btn_w, "white_theme");
@@ -595,12 +742,12 @@ void set_standart_style(t_s *s) {
 
 
 void mx_set_styles(t_s *s) {
-    if(!strcmp(s->h->theme, "black")){
+    if (!strcmp(s->h->theme, "black")) {
         set_black(s);
         set_standart_style(s);
         return;
     }
-    if(!strcmp(s->h->theme, "white")) {
+    if (!strcmp(s->h->theme, "white")) {
         set_white(s);
         set_standart_style(s);
         return;
@@ -632,10 +779,71 @@ void mx_4_chat_init(t_s *s) {
 void set_b(GtkWidget *widget, t_s *s) {
     (void)widget;
     set_black(s);
+    
 }
 void set_w(GtkWidget *widget, t_s *s) {
     (void)widget;
     set_white(s);
+}
+
+void set_engl(t_s *s) {
+    gtk_button_set_label((GtkButton *)s->h->v_l_btn_ru, "RUS");
+    gtk_button_set_label((GtkButton *)s->h->v_l_btn_en, "ENG");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_e, "Send");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_inf, "Info");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_lik, "Love");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_aut, "Beauty");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s1, "Ok");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s2, "Sadness");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s3, "Danger");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s4, "Sad cat");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s5, "Question?");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s6, "Hello");
+    s->h->lang = "eng";
+}
+
+void set_russ(t_s *s) {
+    gtk_button_set_label((GtkButton *)s->h->v_l_btn_ru, "РУС");
+    gtk_button_set_label((GtkButton *)s->h->v_l_btn_en, "АНГ");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_e, "Отправить");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_inf, "Информация");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_lik, "Любовь");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_aut, "Красота");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s1, "Хорошо");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s2, "Грусть");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s3, "Опасность");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s4, "Грустный Кот");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s5, "Вопрос?");
+    gtk_button_set_label((GtkButton *)s->h->v_bt_s6, "Привет");
+    s->h->lang = "rus";
+}
+
+void set_en(GtkWidget *widget, t_s *s) {
+    (void)widget;
+    set_engl(s);
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "ui");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "tema", s->h->theme);
+    cJSON_AddStringToObject(send, "lang", "eng");
+    char *res = cJSON_Print(send);
+
+    tls_write(s->c->tls, res, strlen(res) + 1);
+}
+
+void set_ru(GtkWidget *widget, t_s *s) {
+    (void)widget;
+    set_russ(s);
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "ui");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "tema", s->h->theme);
+    cJSON_AddStringToObject(send, "lang", "rus");
+    char *res = cJSON_Print(send);
+
+    tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
 void init_chatt(t_s *s) {
@@ -645,6 +853,10 @@ void init_chatt(t_s *s) {
     mx_4_chat_init(s);
     
     
+    g_signal_connect(G_OBJECT(s->h->v_l_btn_en), "clicked", G_CALLBACK(set_en), s);
+    g_signal_connect(G_OBJECT(s->h->v_l_btn_ru), "clicked", G_CALLBACK(set_ru), s);
+    
+
     
     g_signal_connect(G_OBJECT(s->h->v_t_btn_b), "clicked", G_CALLBACK(set_b), s);
     g_signal_connect(G_OBJECT(s->h->v_t_btn_w), "clicked", G_CALLBACK(set_w), s);
@@ -666,7 +878,6 @@ void init_chatt(t_s *s) {
     gtk_window_set_title(GTK_WINDOW(s->h->v_window), (const gchar *)"uchat");
     gtk_widget_show_all((GtkWidget *)s->h->v_window);
 
-    // g_timeout_add(50, check_chat, s);
     char *m = mx_strjoin(s->h->login, " conacted");
     cJSON *send = cJSON_CreateObject();
     char *res;

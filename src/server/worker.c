@@ -18,6 +18,69 @@ static int check_kind(char *buf) {
     return res;
 }
 
+// char *mx_do_delete()
+
+
+// char * mx_drop(t_data *data, char *log, char *msg) {
+//     sqlite3_stmt *stmt = data->stmt;/* Вставка сообщения в messages */
+//     char *str = "INSERT INTO messages(time, login, body) VALUES (?1, ?2, ?3)";
+//     char *msg_time = mx_time_to_str();
+
+//     sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
+//     sqlite3_bind_text(stmt, 1, msg_time, strlen(msg_time), SQLITE_STATIC);
+//     sqlite3_bind_text(stmt, 2, log, strlen(log), SQLITE_STATIC);
+//     sqlite3_bind_text(stmt, 3, msg, strlen(msg), SQLITE_STATIC);
+//     if(sqlite3_step(stmt) != SQLITE_DONE)
+//         printf("Error add message to database\n");
+//     sqlite3_finalize(stmt);
+//     return msg_time;
+// }
+
+// char *mx_do_msg(t_data *data, char *buf) {
+//     cJSON *str = cJSON_Parse(buf);
+//     cJSON *send = cJSON_CreateObject();
+//     char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
+//     char *msg = cJSON_GetObjectItemCaseSensitive(str, "msg")->valuestring;
+//     char *time = mx_chat_new_message(data, user, msg); //Добавили msg в БД
+//     int msg_id = mx_get_msg_id(data, user, time, msg);
+    
+//     cJSON_AddStringToObject(send, "kind", "msg");
+//     cJSON_AddStringToObject(send, "login", user);
+//     cJSON_AddStringToObject(send, "msg", msg);
+//     cJSON_AddStringToObject(send, "time", time);
+//     cJSON_AddNumberToObject(send, "id", msg_id);
+//     mx_strdel(&msg);
+//     msg = cJSON_Print(send);
+//     return msg;
+// }
+
+void mx_drop(t_data *data, int id) {
+    sqlite3_stmt *stmt = data->stmt;/* Вставка сообщения в messages */
+    char *str = "ALTER TABLE messages DROP COLUMN ?1";
+
+    sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, mx_itoa(id), strlen(mx_itoa(id)), SQLITE_STATIC);
+    if(sqlite3_step(stmt) != SQLITE_DONE)
+        printf("Error add message to database\n");
+    sqlite3_finalize(stmt);
+}
+
+char *mx_do_delete(t_data *data, char *buf) {
+    cJSON *str = cJSON_Parse(buf);
+    cJSON *send = cJSON_CreateObject();
+    int dropid = cJSON_GetObjectItemCaseSensitive(str, "id")->valueint;
+    // printf("%d\n", dropid);
+    printf("%s\n", buf);
+
+    mx_drop(data, dropid);
+    cJSON_AddStringToObject(send, "kind", "delete");
+    cJSON_AddNumberToObject(send, "id", dropid);
+    char *msg = cJSON_Print(send);
+    printf("%s\n", msg);
+
+    return msg;
+}
+
 static char *do_message(t_data *data, char *buf, struct tls *tlsconn) {
     char *res = NULL;
     
@@ -29,7 +92,7 @@ static char *do_message(t_data *data, char *buf, struct tls *tlsconn) {
             res = mx_do_msg(data, buf);
             break;
         case 3: //delete
-            res = NULL;/* code */
+            res = NULL;
             break;
         case 4://edit
             res = NULL;/* code */
