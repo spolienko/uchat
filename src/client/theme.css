@@ -1,31 +1,38 @@
 
 *{
     padding: 0;
-    margin: 0;
+    margin: 0px;
     color: inherit;
     background-color: inherit;
     outline:none;
     text-decoration: none;
-    font-size: 20px;
-    box-shadow: none;
+    border-radius: 0;
+    font-size: 18px;
+    box-shadow: inset 0px 0px rgba(0, 0, 0, 0), 0 0px white;
+    text-shadow: none;
 }
 
 button{
     border-radius: 0;
-    padding: 15px;
-    border: 2px solid;   
+    border-width: 2px;
 }
+
+button:hover{
+    border-color: orange;
+    color: orange;
+}
+
 
 .lent{
     border: 2px solid white;
     padding: 0 5px;
+
 }
 
 .lent:focus {
     color: orange;
     transition: 1s;
     border-color: orange;
-    border-radius: 10px;
 }
 
 .error {
@@ -39,23 +46,79 @@ button{
     border-color: white;
 }
 
-.main_label{
+
+.white#main_entry {
+    border: 2px solid black;
+    border-radius: 0;
+    padding:0 10px ;
+}
+.black#main_entry {
+    border: 2px solid white;
+    border-radius: 0;
+    padding:0 10px ;
+}
+
+#main_entry:focus {
+    border-color: orange;
+    color: orange;
+}
+
+.main_l{
     font-size: 45px;
     padding: 13px 0;
 }
 .ok_btn{
     margin: 0 60px;
-    border-radius: 10px;
+    border-radius: 4px;
+}
+.ok_btn label{
+    margin: 0 60px;
 }
 
 .ok_btn:hover{
     color: orange;
     transition: 1s;
     border-color: orange;
-    border-radius: 5px;
 
 }
 
+.black{
+    background-color: black;
+    border: 2px solid white ;
+    color: white;
+    
+}
+.black.black_theme{
+    background-color: black;
+    border-color: white;
+}
+
+.black.white_theme{
+    background-color: white;
+    border-color: white;
+
+}
+
+.white{
+    background-color: white;
+    border: 2px solid black ;
+    color: black;
+    
+}
+.white.black_theme{
+    background-color: black;
+    border-color: black;
+}
+
+.white.white_theme{
+    background-color: white;
+    border-color: black;
+
+}
+
+.black_theme:hover, .white_theme:hover{
+    border-color: orange;
+}
 /* 
 
 

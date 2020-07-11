@@ -268,6 +268,7 @@ typedef struct s_row {
     GtkWidget *v_row;
     GtkWidget *v_vrow_box;
     GtkWidget *v_hrow;
+    GtkWidget *v_taa_box;
     GtkWidget *v_author;
     GtkWidget *v_time;
     GtkWidget *v_body;
@@ -283,15 +284,18 @@ void init_row(t_row *row, t_info *inf, t_s *s) {
     gtk_list_box_insert((GtkListBox *)s->h->v_listbox, row->v_row, s->h->v_n);
     s->h->v_n++;
     row->v_hrow = gtk_box_new(FALSE, 0);
+    row->v_taa_box = gtk_box_new(TRUE, 0);
+
     gtk_container_add(GTK_CONTAINER(row->v_row), row->v_hrow);
     row->v_author = gtk_label_new(inf->author);
-    gtk_box_pack_start(GTK_BOX(row->v_hrow), row->v_author, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(row->v_author,250,10);
+    gtk_box_pack_start(GTK_BOX(row->v_taa_box), row->v_author, FALSE, FALSE, 0);
+    gtk_widget_set_size_request(row->v_author,250,40);
     gtk_label_set_xalign((GtkLabel *)row->v_author, 0.5);
     row->v_time = gtk_label_new(inf->timebuf);
-    gtk_box_pack_start(GTK_BOX(row->v_hrow), row->v_time, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(row->v_time,250,10);
+    gtk_box_pack_start(GTK_BOX(row->v_taa_box), row->v_time, FALSE, FALSE, 0);
+    gtk_widget_set_size_request(row->v_time,250,40);
     gtk_label_set_xalign((GtkLabel *)row->v_time, 0.5);
+    gtk_container_add(GTK_CONTAINER(row->v_hrow), row->v_taa_box);
 }
 
 void end_initing(t_row *row, t_info *inf, t_s *s) {
@@ -403,25 +407,56 @@ void watcher_thread(t_s *s) {
 }
 
 
-// void create_content(t_s *s) {
-//     if(!strcmp(s->h->theme, "eng"))
-//         create_eng(s);
-//     if(!strcmp(s->h->theme, "rus")){
-//         create_rus(s);
-//         return;
-//     }
-        
-// }
+void create_eng(t_s *s) {
+    s->h->v_l_btn_ru = gtk_button_new_with_label("RUS");
+    s->h->v_l_btn_en = gtk_button_new_with_label("ENG");
+    s->h->v_bt_e = gtk_button_new_with_label("Send");
+    s->h->v_bt_inf = gtk_button_new_with_label("Info");
+    s->h->v_bt_lik = gtk_button_new_with_label("Love");
+    s->h->v_bt_aut = gtk_button_new_with_label("Beauty");
+    s->h->v_bt_s1 = gtk_button_new_with_label("Ok");
+    s->h->v_bt_s2 = gtk_button_new_with_label("Sadness");
+    s->h->v_bt_s3 = gtk_button_new_with_label("Danger");
+    s->h->v_bt_s4 = gtk_button_new_with_label("Sad cat");
+    s->h->v_bt_s5 = gtk_button_new_with_label("Question?");
+    s->h->v_bt_s6 = gtk_button_new_with_label("Hello");
+}
 
-void mx_init_chat1(t_s *s) {
+void create_rus(t_s *s) {
+    s->h->v_l_btn_ru = gtk_button_new_with_label("РУС");
+    s->h->v_l_btn_en = gtk_button_new_with_label("АНГ");
+    s->h->v_bt_e = gtk_button_new_with_label("Отправить");
+    s->h->v_bt_inf = gtk_button_new_with_label("Информация");
+    s->h->v_bt_lik = gtk_button_new_with_label("Любовь");
+    s->h->v_bt_aut = gtk_button_new_with_label("Красота");
+    s->h->v_bt_s1 = gtk_button_new_with_label("Хорошо");
+    s->h->v_bt_s2 = gtk_button_new_with_label("Грусть");
+    s->h->v_bt_s3 = gtk_button_new_with_label("Опасность");
+    s->h->v_bt_s4 = gtk_button_new_with_label("Грустный Кот");
+    s->h->v_bt_s5 = gtk_button_new_with_label("Вопрос?");
+    s->h->v_bt_s6 = gtk_button_new_with_label("Привет");
+}
+
+void create_content(t_s *s) {
+    if(!strcmp(s->h->lang, "eng")){
+        create_eng(s);
+        return;
+    }
+    if(!strcmp(s->h->lang, "rus")) {
+        create_rus(s);
+        return;
+    }
+    create_eng(s);
+}
+
+
+void mx_1_chat_init(t_s *s) {
     s->h->login = s->l->login;
     s->h->lang = s->l->lang;
     s->h->v_n = 0;
     s->h->theme = s->l->theme;
-    // create_content(s);
+    create_content(s);
     s->h->v_scroll = gtk_scrolled_window_new(0,0);
-    s->h->v_l_btn_ru = gtk_button_new_with_label("RUS");
-    s->h->v_l_btn_en = gtk_button_new_with_label("ENG");
     s->h->v_t_btn_b = gtk_button_new_with_label("   ");
     s->h->v_t_btn_w = gtk_button_new_with_label("   ");
     s->h->vbox = gtk_box_new(TRUE, 0);
@@ -431,29 +466,15 @@ void mx_init_chat1(t_s *s) {
     s->h->btns_b = gtk_box_new(FALSE, 0);
     s->h->v_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     s->h->cssProv = gtk_css_provider_new();
-}
-
-void mx_init_chat2(t_s *s) {
-    printf("%s\t%s\n",s->h->lang , s->h->theme);
     s->h->v_listbox = gtk_list_box_new();
     s->h->v_main_e = gtk_entry_new();
-    s->h->v_bt_e = gtk_button_new_with_label("Send");
-    s->h->v_bt_inf = gtk_button_new_with_label("Info");
-    s->h->v_bt_lik = gtk_button_new_with_label("Love");
-    s->h->v_bt_aut = gtk_button_new_with_label(":()");
-    s->h->v_bt_s1 = gtk_button_new_with_label("+");
-    s->h->v_bt_s2 = gtk_button_new_with_label("sadness");
-    s->h->v_bt_s3 = gtk_button_new_with_label("danger");
-    s->h->v_bt_s4 = gtk_button_new_with_label("sad cat");
-    s->h->v_bt_s5 = gtk_button_new_with_label("?");
-    s->h->v_bt_s6 = gtk_button_new_with_label("hello");
+}
+
+void mx_2_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_l_btn_ru, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_l_btn_en, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_t_btn_b, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_t_btn_w, FALSE, TRUE, 0);
-}
-
-void mx_init_chat3(t_s *s) {
     gtk_widget_set_size_request(s->h->v_l_btn_ru, 450, 50);
     gtk_widget_set_size_request(s->h->v_l_btn_en, 450, 50);
     gtk_widget_set_size_request(s->h->v_t_btn_b, 450, 50);
@@ -471,8 +492,7 @@ void mx_init_chat3(t_s *s) {
     gtk_widget_set_size_request(s->h->v_bt_e,200,50);
 }
 
-
-void mx_init_chat4(t_s *s) {
+void mx_3_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->btns_b), s->h->v_bt_inf, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->btns_b), s->h->v_bt_lik, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->btns_b), s->h->v_bt_aut, FALSE, TRUE, 0);
@@ -491,17 +511,104 @@ void mx_init_chat4(t_s *s) {
     gtk_widget_set_size_request(s->h->v_bt_s4,200,50);
     gtk_widget_set_size_request(s->h->v_bt_s5,200,50);
     gtk_widget_set_size_request(s->h->v_bt_s6,200,50);
+    gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->btns_b, TRUE, FALSE, 0);
 }
 
-void init_chatt(t_s *s) {
-    mx_init_chat1(s);
-    mx_init_chat2(s);
-    mx_init_chat3(s);
-    mx_init_chat4(s);
-    
-    
 
-    gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->btns_b, TRUE, FALSE, 0);
+void set_white(t_s *s) {
+    gtk_style_context_remove_class (s->h->c_v_l_btn_ru, "black");
+    gtk_style_context_remove_class (s->h->c_v_l_btn_en, "black");
+    gtk_style_context_remove_class (s->h->c_v_scroll, "black");
+    gtk_style_context_remove_class (s->h->c_v_main_e, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_e, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_like, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_aut, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_info, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_s1, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_s2, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_s3, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_s4, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_s5, "black");
+    gtk_style_context_remove_class (s->h->c_v_bt_s6, "black");
+    gtk_style_context_remove_class (s->h->c_v_t_btn_b, "black");
+    gtk_style_context_remove_class (s->h->c_v_t_btn_w, "black");
+
+    gtk_style_context_add_class (s->h->c_v_l_btn_ru, "white");
+    gtk_style_context_add_class (s->h->c_v_l_btn_en, "white");
+    gtk_style_context_add_class (s->h->c_v_scroll, "white");
+    gtk_style_context_add_class (s->h->c_v_main_e, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_e, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_like, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_aut, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_info, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_s1, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_s2, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_s3, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_s4, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_s5, "white");
+    gtk_style_context_add_class (s->h->c_v_bt_s6, "white");
+    gtk_style_context_add_class (s->h->c_v_t_btn_b, "white");
+    gtk_style_context_add_class (s->h->c_v_t_btn_w, "white");
+}
+
+void set_black(t_s *s) {
+    gtk_style_context_remove_class (s->h->c_v_l_btn_ru, "white");
+    gtk_style_context_remove_class (s->h->c_v_l_btn_en, "white");
+    gtk_style_context_remove_class (s->h->c_v_scroll, "white");
+    gtk_style_context_remove_class (s->h->c_v_main_e, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_e, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_like, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_aut, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_info, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s1, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s2, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s3, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s4, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s5, "white");
+    gtk_style_context_remove_class (s->h->c_v_bt_s6, "white");
+    gtk_style_context_remove_class (s->h->c_v_t_btn_b, "white");
+    gtk_style_context_remove_class (s->h->c_v_t_btn_w, "white");
+
+    gtk_style_context_add_class (s->h->c_v_l_btn_ru, "black");
+    gtk_style_context_add_class (s->h->c_v_l_btn_en, "black");
+    gtk_style_context_add_class (s->h->c_v_scroll, "black");
+    gtk_style_context_add_class (s->h->c_v_main_e, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_e, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_like, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_aut, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_info, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_s1, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_s2, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_s3, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_s4, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_s5, "black");
+    gtk_style_context_add_class (s->h->c_v_bt_s6, "black");
+    gtk_style_context_add_class (s->h->c_v_t_btn_b, "black");
+    gtk_style_context_add_class (s->h->c_v_t_btn_w, "black");
+}
+
+void set_standart_style(t_s *s) {
+    gtk_style_context_add_class (s->h->c_v_t_btn_b, "black_theme");
+    gtk_style_context_add_class (s->h->c_v_t_btn_w, "white_theme");
+    gtk_widget_set_name(s->h->v_main_e, "main_entry");
+}
+
+
+void mx_set_styles(t_s *s) {
+    if(!strcmp(s->h->theme, "black")){
+        set_black(s);
+        set_standart_style(s);
+        return;
+    }
+    if(!strcmp(s->h->theme, "white")) {
+        set_white(s);
+        set_standart_style(s);
+        return;
+    }
+    set_black(s);
+}
+
+void mx_4_chat_init(t_s *s) {
     s->h->c_v_window = gtk_widget_get_style_context(s->h->v_window);
     s->h->c_v_l_btn_ru = gtk_widget_get_style_context(s->h->v_l_btn_ru);
     s->h->c_v_l_btn_en = gtk_widget_get_style_context(s->h->v_l_btn_en);
@@ -519,6 +626,30 @@ void init_chatt(t_s *s) {
     s->h->c_v_bt_s4 = gtk_widget_get_style_context(s->h->v_bt_s4);
     s->h->c_v_bt_s5 = gtk_widget_get_style_context(s->h->v_bt_s5);
     s->h->c_v_bt_s6 = gtk_widget_get_style_context(s->h->v_bt_s6);
+    mx_set_styles(s);
+}
+
+void set_b(GtkWidget *widget, t_s *s) {
+    (void)widget;
+    set_black(s);
+}
+void set_w(GtkWidget *widget, t_s *s) {
+    (void)widget;
+    set_white(s);
+}
+
+void init_chatt(t_s *s) {
+    mx_1_chat_init(s);
+    mx_2_chat_init(s);
+    mx_3_chat_init(s);
+    mx_4_chat_init(s);
+    
+    
+    
+    g_signal_connect(G_OBJECT(s->h->v_t_btn_b), "clicked", G_CALLBACK(set_b), s);
+    g_signal_connect(G_OBJECT(s->h->v_t_btn_w), "clicked", G_CALLBACK(set_w), s);
+
+    
     g_signal_connect(G_OBJECT(s->h->v_bt_inf), "clicked", G_CALLBACK(inf), s);
     g_signal_connect(G_OBJECT(s->h->v_bt_lik), "clicked", G_CALLBACK(sen), (gpointer)0);
     g_signal_connect(G_OBJECT(s->h->v_bt_aut), "clicked", G_CALLBACK(sen), (gpointer)1);

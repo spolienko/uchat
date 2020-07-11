@@ -103,7 +103,7 @@ int mx_tls_config_set_key_file(struct tls_config *conf);
 int mx_tls_config_set_cert_file(struct tls_config *conf);
 void mx_init_tls_array(struct tls *arr[MX_MAX_CONN], int len);
 t_connection *mx_tls_start(t_connection *conn);
-int mx_start_network(int port);
+int mx_start_network(int port, char *argv);
 
 /* client */
 
