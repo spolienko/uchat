@@ -23,6 +23,7 @@ typedef struct s_clt {
 
 typedef struct s_lgn {
     int login_in;
+    int was_connect;
     char *login;
     char *pass;
     char *lang;
@@ -60,6 +61,7 @@ typedef struct s_ct {
     char window_title[100];
     int v_n;
     int delete_id;
+
     GtkWidget *v_window;
     GtkWidget *v_main_grid;
     GtkWidget *v_l_btn_ru;
@@ -312,14 +314,140 @@ char *what_return(int gg) {
     return "err";
 } 
 
-void sen(GtkWidget *widget, int gg){
-    char *message = what_return(gg);
-    char *m = malloc(strlen(message) + 1);
+void sen0(GtkWidget *widget, t_s *s) {
+    char *message = what_return(0);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
 
-    strcpy(m, message);
-    // message_send(m);
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
     (void)widget;
 }
+
+void sen1(GtkWidget *widget, t_s *s) {
+    char *message = what_return(1);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    (void)widget;
+}
+
+void sen2(GtkWidget *widget, t_s *s) {
+    char *message = what_return(2);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    (void)widget;
+}
+
+void sen3(GtkWidget *widget, t_s *s) {
+    char *message = what_return(3);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    (void)widget;
+}
+
+
+void sen4(GtkWidget *widget, t_s *s) {
+    char *message = what_return(4);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    (void)widget;
+}
+void sen5(GtkWidget *widget, t_s *s) {
+    char *message = what_return(5);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    (void)widget;
+}
+void sen6(GtkWidget *widget, t_s *s) {
+    char *message = what_return(6);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    (void)widget;
+}
+void sen7(GtkWidget *widget, t_s *s) {
+    char *message = what_return(7);
+    char *m = malloc(strlen(message) + 1);    
+    strcpy(m, trim(message));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    (void)widget;
+}
+
 
 typedef struct s_row {
     GtkWidget *v_row;
@@ -409,7 +537,7 @@ void print_X(t_row *row, t_info *inf, t_s *s) {
 void end_initing(t_row *row, t_info *inf, t_s *s) {
     (void)inf,(void) s;
     gtk_box_pack_start(GTK_BOX(row->v_hrow), row->v_body, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(row->v_body,1300,30);
+    gtk_widget_set_size_request(row->v_body,100,30);
     // if(!check_on_cmd(inf->body))
     //     gtk_label_set_xalign((GtkLabel *)row->v_body, 0.04);
     gtk_widget_set_size_request(row->v_body,80,30);
@@ -478,6 +606,15 @@ void print_cmd(t_row *row, t_info *inf) {
         print_text(row, inf);
 }
 
+// char *get_new_body(char *str) {
+//     char *new_str = strdup(str);
+
+//     if (is_have_cmd(new_str)) {
+//         new_str = get_new_body_str(new_str);
+//     }
+//     return new_str;
+// }
+
 void create_row(t_info *inf, t_s *s) {   
     t_row *row = malloc(sizeof(t_row));
 
@@ -524,7 +661,7 @@ void watcher_thread(t_s *s) {
         if (s->c->pfd[1].revents & POLLIN) {
             if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) 
                 break;
-            printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
+            // printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
             cJSON *msg = cJSON_Parse(s->c->bufs);
             check_mesage_from_serv(s, msg);
         }
@@ -613,7 +750,7 @@ void mx_2_chat_init(t_s *s) {
     gtk_container_add(GTK_CONTAINER(s->h->v_window), s->h->vbox);
     gtk_window_set_resizable((GtkWindow *)s->h->v_window, FALSE);
     gtk_box_pack_start(GTK_BOX(s->h->scr_box), s->h->v_scroll, TRUE, TRUE, 0);
-    gtk_widget_set_size_request(s->h->v_scroll,1800,950);
+    gtk_widget_set_size_request(s->h->v_scroll,1800,250);
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_main_e, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_bt_e, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->ent_box, TRUE, FALSE, 0);
@@ -900,14 +1037,14 @@ void init_chatt(t_s *s) {
 
     
     g_signal_connect(G_OBJECT(s->h->v_bt_inf), "clicked", G_CALLBACK(inf), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_lik), "clicked", G_CALLBACK(sen), (gpointer)0);
-    g_signal_connect(G_OBJECT(s->h->v_bt_aut), "clicked", G_CALLBACK(sen), (gpointer)1);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s1), "clicked", G_CALLBACK(sen), (gpointer)2);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s2), "clicked", G_CALLBACK(sen), (gpointer)3);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s3), "clicked", G_CALLBACK(sen), (gpointer)4);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s4), "clicked", G_CALLBACK(sen), (gpointer)5);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s5), "clicked", G_CALLBACK(sen), (gpointer)6);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s6), "clicked", G_CALLBACK(sen), (gpointer)7);
+    g_signal_connect(G_OBJECT(s->h->v_bt_lik), "clicked", G_CALLBACK(sen0), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_aut), "clicked", G_CALLBACK(sen1), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s1), "clicked", G_CALLBACK(sen2), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s2), "clicked", G_CALLBACK(sen3), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s3), "clicked", G_CALLBACK(sen4), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s4), "clicked", G_CALLBACK(sen5), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s5), "clicked", G_CALLBACK(sen6), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s6), "clicked", G_CALLBACK(sen7), s);
 
     gtk_container_add(GTK_CONTAINER(s->h->v_scroll), s->h->v_listbox);
     g_signal_connect(s->h->v_window,"destroy",G_CALLBACK(gtk_main_quit), NULL);
@@ -1266,6 +1403,18 @@ int init_server(t_s *s, char **argv) {
     return 0;
 }
 
+void listening_server(t_s *s) {
+    while (true) {
+        bzero(s->c->bufs, 1000);
+        poll(s->c->pfd, 2, -1);
+        if (s->c->pfd[1].revents & POLLIN) {
+            if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) 
+                break;
+            printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     if (argc < 3) {
         mx_printerr("usage: uchat [ip_adress] [port]\n");
@@ -1279,4 +1428,11 @@ int main(int argc, char **argv) {
     if (init_server(s, argv))
         mx_exit_chat(s);
     mx_client_init(s, argc, argv);
+    pthread_t thread_input;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    int tc = pthread_create(&thread_input, &attr, (void * _Nullable (* _Nonnull)(void * _Nullable))listening_server, s);
+    if (tc != 0)
+        printf("pthread_create error = %s\n", strerror(tc));
 }
