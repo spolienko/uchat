@@ -37,10 +37,10 @@ OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
 
 CFLAGS = -std=c11  -Wall -Wextra -Werror -Wpedantic \
-		 	-Wno-pedantic -Wno-unused-command-line-argument \
+		 	-Wno-pedantic -g -fsanitize=address -Wno-unused-command-line-argument \
 		 	`pkg-config --cflags --libs gtk+-3.0`
 
-CFLAGS2 = -std=c11 -Wall -Wextra -Wpedantic -Werror
+CFLAGS2 = -std=c11 -g -fsanitize=address -Wall -Wextra -Wpedantic -Werror
 
 
 LIBRESSL_A = ./libressl/tls/.libs/libtls.a \

@@ -23,6 +23,7 @@ typedef struct s_clt {
 
 typedef struct s_lgn {
     int login_in;
+    char **argv;
     char *login;
     char *pass;
     char *lang;
@@ -66,6 +67,7 @@ typedef struct s_ct {
     GtkWidget *v_l_btn_en;
     GtkWidget *v_t_btn_b;
     GtkWidget *v_t_btn_w;
+    GtkWidget *v_l_btn_rm;
     GtkWidget *v_scroll;
     GtkWidget *v_main_e;
     GtkWidget *v_bt_e;
@@ -90,6 +92,7 @@ typedef struct s_ct {
     GtkStyleContext *c_v_l_btn_en;
     GtkStyleContext *c_v_t_btn_b;
     GtkStyleContext *c_v_t_btn_w;
+    GtkStyleContext *c_v_l_btn_rm;
     GtkStyleContext *c_v_scroll;
     GtkStyleContext *c_v_main_e;
     GtkStyleContext *c_v_bt_e;
@@ -127,6 +130,160 @@ typedef struct s_info {
     char *timebuf;
     int id;
 }              t_info;
+
+
+
+
+void mx_report_1(time_t t, const char *ocsp_url, t_s *s, char *host) {
+    fprintf(stderr, "\nTLS handshake negotiated %s/%s with host %s\n",
+            tls_conn_version(s->c->tls), tls_conn_cipher(s->c->tls), host);
+    fprintf(stderr, "Peer name: %s\n", host);
+    if (tls_peer_cert_subject(s->c->tls))
+        fprintf(stderr, "Subject: %s\n",
+                tls_peer_cert_subject(s->c->tls));
+    if (tls_peer_cert_issuer(s->c->tls))
+        fprintf(stderr, "Issuer: %s\n",
+                tls_peer_cert_issuer(s->c->tls));
+    if ((t = tls_peer_cert_notbefore(s->c->tls)) != -1)
+        fprintf(stderr, "Valid From: %s", ctime(&t));
+    if ((t = tls_peer_cert_notafter(s->c->tls)) != -1)
+        fprintf(stderr, "Valid Until: %s", ctime(&t));
+    if (tls_peer_cert_hash(s->c->tls))
+        fprintf(stderr, "Cert Hash: %s\n",
+                tls_peer_cert_hash(s->c->tls));
+    ocsp_url = tls_peer_ocsp_url(s->c->tls);
+    if (ocsp_url != NULL)
+        fprintf(stderr, "OCSP URL: %s\n", ocsp_url);
+}
+
+void mx_report_2(time_t t, t_s *s) {
+    fprintf(stderr, "OCSP Stapling: %s\n",
+            tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
+            tls_peer_ocsp_result(s->c->tls));
+    fprintf(stderr,
+            " response_status=%d cert_status=%d crl_reason=%d\n",
+            tls_peer_ocsp_response_status(s->c->tls),
+            tls_peer_ocsp_cert_status(s->c->tls),
+            tls_peer_ocsp_crl_reason(s->c->tls));
+    t = tls_peer_ocsp_this_update(s->c->tls);
+    fprintf(stderr, "  this update: %s",
+            t != -1 ? ctime(&t) : "\n");
+    t =  tls_peer_ocsp_next_update(s->c->tls);
+    fprintf(stderr, "  next update: %s",
+            t != -1 ? ctime(&t) : "\n");
+    t =  tls_peer_ocsp_revocation_time(s->c->tls);
+    fprintf(stderr, "  revocation: %s",
+            t != -1 ? ctime(&t) : "\n");
+}
+
+void mx_report_tls_client(t_s *s, char *host) {
+    time_t t = 0;
+    const char *ocsp_url;
+
+    mx_report_1(t, ocsp_url, s, host);
+    switch (tls_peer_ocsp_response_status(s->c->tls)) {
+        case TLS_OCSP_RESPONSE_SUCCESSFUL:
+            mx_report_2(t, s);
+            break;
+        case -1:
+            break;
+        default:
+            fprintf(stderr, "OCSP Stapling: fail-response_status %d (%s)\n",
+                    tls_peer_ocsp_response_status(s->c->tls),
+                    tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
+                    tls_peer_ocsp_result(s->c->tls));
+            break;
+    }
+}
+
+
+
+
+void first_serv_init(t_s *s) {
+    s->c->enable = 1;
+    if (tls_init() < 0) {
+        printf("tls_init error\n");
+        exit(1);
+    }
+    s->c->cnf = tls_config_new();
+    s->c->tls = tls_client();
+    tls_config_insecure_noverifycert(s->c->cnf);
+    tls_config_insecure_noverifyname(s->c->cnf);
+    if (tls_config_set_key_file(s->c->cnf, "./certificates/client.key") < 0) {
+        printf("tls_config_set_key_file error\n");
+        exit(1);
+    }
+    if (tls_config_set_cert_file(s->c->cnf, 
+                                 "./certificates/client.pem") < 0) {
+        printf("tls_config_set_cert_file error\n");
+        exit(1);
+    }
+    tls_configure(s->c->tls, s->c->cnf);
+    memset(&s->c->h, 0, sizeof(s->c->h));
+}
+
+int second_serv_init(t_s *s, char **argv) {
+    s->c->h.ai_socktype = SOCK_STREAM;
+    if ((s->c->err = getaddrinfo(argv[1], argv[2], 
+                                 &s->c->h, &s->c->p_ad)) != 0) {
+        fprintf(stderr, "getaddrinfo()fail. (%s)\n", gai_strerror(s->c->err));
+        return 1;
+    }
+    printf("Remote address is: ");
+    getnameinfo(s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen,
+                s->c->address_buffer, sizeof(s->c->address_buffer),
+                s->c->service_buffer, sizeof(s->c->service_buffer),
+                NI_NUMERICHOST);
+    printf("%s %s\n", s->c->address_buffer, s->c->service_buffer);
+    s->c->sock = socket(s->c->p_ad->ai_family,
+                  s->c->p_ad->ai_socktype, s->c->p_ad->ai_protocol);
+    if (s->c->sock == -1) {
+        printf("error sock = %s\n", strerror(errno));
+        return 1;
+    }
+    return 0;
+}
+
+int third_serv_init(t_s *s) {
+    setsockopt(s->c->sock, IPPROTO_TCP, SO_KEEPALIVE,
+               &s->c->enable, sizeof(int));
+    if (connect(s->c->sock, s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen)) {
+        printf("connect error = %s\n", strerror(errno));
+        return 1;
+    }
+    freeaddrinfo(s->c->p_ad);
+    printf("connect TCP sock =%d\n", s->c->sock);
+
+    if (tls_connect_socket(s->c->tls, s->c->sock, "uchat_server") < 0) {
+        printf("tls_connect error\n");
+        printf("%s\n", tls_error(s->c->tls));
+        exit(1);
+    }
+    printf("tls connect +\n");
+    return 0;
+}
+
+int init_server(t_s *s, char **argv) {
+    first_serv_init(s);
+    if (second_serv_init(s, argv))
+        return 1;
+    if (third_serv_init(s))
+        return 1;
+    if (tls_handshake(s->c->tls) < 0) {
+        printf("tls_handshake error\n");
+        printf("%s\n", tls_error(s->c->tls));
+        exit(1);
+    }
+    mx_report_tls_client(s, "client");
+    printf("\n");
+    s->c->rc = 0;
+    s->c->pfd[0].fd = 0;
+    s->c->pfd[0].events = POLLIN;
+    s->c->pfd[1].fd = s->c->sock;
+    s->c->pfd[1].events = POLLIN;
+    return 0;
+}
+
 
 int mx_exit_chat(t_s *s) {
     tls_close(s->c->tls);
@@ -215,10 +372,10 @@ void do_s(GtkWidget *widget, t_s *s) {
 
 void set_class_for_help(t_inf_row *inf) {
     inf->c_v_body = gtk_widget_get_style_context(inf->v_body);
-    gtk_style_context_add_class (inf->c_v_body, "orange");
-    gtk_style_context_add_class (inf->c_v_body, "h2");
-    gtk_style_context_add_class (inf->c_v_body, "normal");
-    gtk_style_context_add_class (inf->c_v_body, "pading_left_100");
+    gtk_style_context_add_class(inf->c_v_body, "orange");
+    gtk_style_context_add_class(inf->c_v_body, "h2");
+    gtk_style_context_add_class(inf->c_v_body, "normal");
+    gtk_style_context_add_class(inf->c_v_body, "pading_left_100");
 }
 
 void init_help(t_inf_row *inf, t_s *s) {
@@ -374,25 +531,38 @@ void delete (GtkWidget *widget, t_for_click *c) {
 
 void set_class_for_X(t_row *row, t_info *inf, t_s *s){
     row->c_v_bt_del = gtk_widget_get_style_context(row->v_bt_del);
-    gtk_style_context_add_class (row->c_v_bt_del, "X");
+    gtk_style_context_add_class(row->c_v_bt_del, "X");
     (void)inf;
     (void)s;
 }
 
+gboolean check_deleting(t_for_click *c) {
+    printf("%d\t%d \n", c->inf->id, c->s->h->delete_id);
+    if (c->s->h->delete_id == c->inf->id){
+        gtk_container_remove((GtkContainer *)c->s->h->v_listbox, c->row->v_row);
+        // printf("%d\n", c->inf->id);
+        c->s->h->delete_id = -2;
+        return G_SOURCE_REMOVE;
+    }
+    return G_SOURCE_CONTINUE;
+}
+
 void print_X(t_row *row, t_info *inf, t_s *s) {
+    t_for_click *c = malloc(sizeof(t_for_click));
+    c->row = row;
+    c->inf = inf;
+    c->s = s;
     if(!strcmp(inf->author, s->h->login)) {
-        t_for_click *c = malloc(sizeof(t_for_click));
 
         row->v_bt_del = gtk_button_new_with_label("X");
         gtk_widget_set_name(row->v_bt_del, "X");
         gtk_box_pack_start(GTK_BOX(row->v_hrow), 
         row->v_bt_del, FALSE, FALSE, 0);
         set_class_for_X(row, inf, s);
-        c->row = row;
-        c->inf = inf;
-        c->s = s;
         g_signal_connect(G_OBJECT(row->v_bt_del), "clicked", G_CALLBACK(delete), c);
     }
+    
+    g_timeout_add(500, (GSourceFunc)check_deleting, c);
 }
 
 void end_initing(t_row *row, t_info *inf, t_s *s) {
@@ -494,7 +664,6 @@ void create_msg(t_s *s, cJSON *msg) {
 
 void delete_msg(t_s *s, cJSON *msg) {
     s->h->delete_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
-    printf("%d\n", s->h->delete_id);
 }
 
 void check_mesage_from_serv(t_s *s, cJSON *msg) {
@@ -525,6 +694,7 @@ void watcher_thread(t_s *s) {
 void create_eng(t_s *s) {
     s->h->v_l_btn_ru = gtk_button_new_with_label("RUS");
     s->h->v_l_btn_en = gtk_button_new_with_label("ENG");
+    s->h->v_l_btn_rm = gtk_button_new_with_label("Delete");
     s->h->v_bt_e = gtk_button_new_with_label("Send");
     s->h->v_bt_inf = gtk_button_new_with_label("Info");
     s->h->v_bt_lik = gtk_button_new_with_label("Love");
@@ -540,6 +710,7 @@ void create_eng(t_s *s) {
 void create_rus(t_s *s) {
     s->h->v_l_btn_ru = gtk_button_new_with_label("РУС");
     s->h->v_l_btn_en = gtk_button_new_with_label("АНГ");
+    s->h->v_l_btn_rm = gtk_button_new_with_label("Удалить");
     s->h->v_bt_e = gtk_button_new_with_label("Отправить");
     s->h->v_bt_inf = gtk_button_new_with_label("Информация");
     s->h->v_bt_lik = gtk_button_new_with_label("Любовь");
@@ -590,10 +761,12 @@ void mx_2_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_l_btn_en, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_t_btn_b, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_t_btn_w, FALSE, TRUE, 0);
-    gtk_widget_set_size_request(s->h->v_l_btn_ru, 450, 50);
-    gtk_widget_set_size_request(s->h->v_l_btn_en, 450, 50);
-    gtk_widget_set_size_request(s->h->v_t_btn_b, 450, 50);
-    gtk_widget_set_size_request(s->h->v_t_btn_w, 450, 50);
+    gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_l_btn_rm, FALSE, TRUE, 0);
+    gtk_widget_set_size_request(s->h->v_l_btn_ru, 400, 50);
+    gtk_widget_set_size_request(s->h->v_l_btn_en, 400, 50);
+    gtk_widget_set_size_request(s->h->v_t_btn_b, 400, 50);
+    gtk_widget_set_size_request(s->h->v_t_btn_w, 400, 50);
+    gtk_widget_set_size_request(s->h->v_l_btn_rm, 200, 50);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->T_b, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->scr_box, FALSE, TRUE, 0);
     gtk_container_add(GTK_CONTAINER(s->h->v_window), s->h->vbox);
@@ -630,79 +803,83 @@ void mx_3_chat_init(t_s *s) {
 }
 
 void mx_remove_class_black(t_s *s) {
-    gtk_style_context_remove_class (s->h->c_v_l_btn_ru, "black");
-    gtk_style_context_remove_class (s->h->c_v_l_btn_en, "black");
-    gtk_style_context_remove_class (s->h->c_v_scroll, "black");
-    gtk_style_context_remove_class (s->h->c_v_main_e, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_e, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_like, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_aut, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_info, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_s1, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_s2, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_s3, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_s4, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_s5, "black");
-    gtk_style_context_remove_class (s->h->c_v_bt_s6, "black");
-    gtk_style_context_remove_class (s->h->c_v_t_btn_b, "black");
-    gtk_style_context_remove_class (s->h->c_v_t_btn_w, "black");
+    gtk_style_context_remove_class(s->h->c_v_l_btn_ru, "black");
+    gtk_style_context_remove_class(s->h->c_v_l_btn_en, "black");
+    gtk_style_context_remove_class(s->h->c_v_l_btn_rm, "black");
+    gtk_style_context_remove_class(s->h->c_v_scroll, "black");
+    gtk_style_context_remove_class(s->h->c_v_main_e, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_e, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_like, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_aut, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_info, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_s1, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_s2, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_s3, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_s4, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_s5, "black");
+    gtk_style_context_remove_class(s->h->c_v_bt_s6, "black");
+    gtk_style_context_remove_class(s->h->c_v_t_btn_b, "black");
+    gtk_style_context_remove_class(s->h->c_v_t_btn_w, "black");
 }
 
 void mx_remove_class_white(t_s *s) {
-    gtk_style_context_remove_class (s->h->c_v_l_btn_ru, "white");
-    gtk_style_context_remove_class (s->h->c_v_l_btn_en, "white");
-    gtk_style_context_remove_class (s->h->c_v_scroll, "white");
-    gtk_style_context_remove_class (s->h->c_v_main_e, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_e, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_like, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_aut, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_info, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s1, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s2, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s3, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s4, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s5, "white");
-    gtk_style_context_remove_class (s->h->c_v_bt_s6, "white");
-    gtk_style_context_remove_class (s->h->c_v_t_btn_b, "white");
-    gtk_style_context_remove_class (s->h->c_v_t_btn_w, "white");
+    gtk_style_context_remove_class(s->h->c_v_l_btn_ru, "white");
+    gtk_style_context_remove_class(s->h->c_v_l_btn_en, "white");
+    gtk_style_context_remove_class(s->h->c_v_l_btn_rm, "white");
+    gtk_style_context_remove_class(s->h->c_v_scroll, "white");
+    gtk_style_context_remove_class(s->h->c_v_main_e, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_e, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_like, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_aut, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_info, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_s1, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_s2, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_s3, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_s4, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_s5, "white");
+    gtk_style_context_remove_class(s->h->c_v_bt_s6, "white");
+    gtk_style_context_remove_class(s->h->c_v_t_btn_b, "white");
+    gtk_style_context_remove_class(s->h->c_v_t_btn_w, "white");
 }
 
 void mx_add_class_white(t_s *s) {
-    gtk_style_context_add_class (s->h->c_v_l_btn_ru, "white");
-    gtk_style_context_add_class (s->h->c_v_l_btn_en, "white");
-    gtk_style_context_add_class (s->h->c_v_scroll, "white");
-    gtk_style_context_add_class (s->h->c_v_main_e, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_e, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_like, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_aut, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_info, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_s1, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_s2, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_s3, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_s4, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_s5, "white");
-    gtk_style_context_add_class (s->h->c_v_bt_s6, "white");
-    gtk_style_context_add_class (s->h->c_v_t_btn_b, "white");
-    gtk_style_context_add_class (s->h->c_v_t_btn_w, "white");
+    gtk_style_context_add_class(s->h->c_v_l_btn_ru, "white");
+    gtk_style_context_add_class(s->h->c_v_l_btn_en, "white");
+    gtk_style_context_add_class(s->h->c_v_l_btn_rm, "white");
+    gtk_style_context_add_class(s->h->c_v_scroll, "white");
+    gtk_style_context_add_class(s->h->c_v_main_e, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_e, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_like, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_aut, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_info, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_s1, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_s2, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_s3, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_s4, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_s5, "white");
+    gtk_style_context_add_class(s->h->c_v_bt_s6, "white");
+    gtk_style_context_add_class(s->h->c_v_t_btn_b, "white");
+    gtk_style_context_add_class(s->h->c_v_t_btn_w, "white");
 }
 
 void mx_add_class_black(t_s *s) {
-    gtk_style_context_add_class (s->h->c_v_l_btn_ru, "black");
-    gtk_style_context_add_class (s->h->c_v_l_btn_en, "black");
-    gtk_style_context_add_class (s->h->c_v_scroll, "black");
-    gtk_style_context_add_class (s->h->c_v_main_e, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_e, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_like, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_aut, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_info, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_s1, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_s2, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_s3, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_s4, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_s5, "black");
-    gtk_style_context_add_class (s->h->c_v_bt_s6, "black");
-    gtk_style_context_add_class (s->h->c_v_t_btn_b, "black");
-    gtk_style_context_add_class (s->h->c_v_t_btn_w, "black");
+    gtk_style_context_add_class(s->h->c_v_l_btn_ru, "black");
+    gtk_style_context_add_class(s->h->c_v_l_btn_en, "black");
+    gtk_style_context_add_class(s->h->c_v_l_btn_rm, "black");
+    gtk_style_context_add_class(s->h->c_v_scroll, "black");
+    gtk_style_context_add_class(s->h->c_v_main_e, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_e, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_like, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_aut, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_info, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_s1, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_s2, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_s3, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_s4, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_s5, "black");
+    gtk_style_context_add_class(s->h->c_v_bt_s6, "black");
+    gtk_style_context_add_class(s->h->c_v_t_btn_b, "black");
+    gtk_style_context_add_class(s->h->c_v_t_btn_w, "black");
 }
 
 void set_white(t_s *s) {
@@ -735,8 +912,8 @@ void set_black(t_s *s) {
 }
 
 void set_standart_style(t_s *s) {
-    gtk_style_context_add_class (s->h->c_v_t_btn_b, "black_theme");
-    gtk_style_context_add_class (s->h->c_v_t_btn_w, "white_theme");
+    gtk_style_context_add_class(s->h->c_v_t_btn_b, "black_theme");
+    gtk_style_context_add_class(s->h->c_v_t_btn_w, "white_theme");
     gtk_widget_set_name(s->h->v_main_e, "main_entry");
 }
 
@@ -759,6 +936,8 @@ void mx_4_chat_init(t_s *s) {
     s->h->c_v_window = gtk_widget_get_style_context(s->h->v_window);
     s->h->c_v_l_btn_ru = gtk_widget_get_style_context(s->h->v_l_btn_ru);
     s->h->c_v_l_btn_en = gtk_widget_get_style_context(s->h->v_l_btn_en);
+    s->h->c_v_l_btn_en = gtk_widget_get_style_context(s->h->v_l_btn_en);
+    s->h->c_v_l_btn_rm = gtk_widget_get_style_context(s->h->v_l_btn_rm);
     s->h->c_v_t_btn_b = gtk_widget_get_style_context(s->h->v_t_btn_b);
     s->h->c_v_t_btn_w = gtk_widget_get_style_context(s->h->v_t_btn_w);
     s->h->c_v_scroll = gtk_widget_get_style_context(s->h->v_scroll);
@@ -789,6 +968,7 @@ void set_w(GtkWidget *widget, t_s *s) {
 void set_engl(t_s *s) {
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_ru, "RUS");
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_en, "ENG");
+    gtk_button_set_label((GtkButton *)s->h->v_l_btn_rm, "Delete");
     gtk_button_set_label((GtkButton *)s->h->v_bt_e, "Send");
     gtk_button_set_label((GtkButton *)s->h->v_bt_inf, "Info");
     gtk_button_set_label((GtkButton *)s->h->v_bt_lik, "Love");
@@ -805,6 +985,7 @@ void set_engl(t_s *s) {
 void set_russ(t_s *s) {
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_ru, "РУС");
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_en, "АНГ");
+    gtk_button_set_label((GtkButton *)s->h->v_l_btn_rm, "Удалить");
     gtk_button_set_label((GtkButton *)s->h->v_bt_e, "Отправить");
     gtk_button_set_label((GtkButton *)s->h->v_bt_inf, "Информация");
     gtk_button_set_label((GtkButton *)s->h->v_bt_lik, "Любовь");
@@ -846,12 +1027,25 @@ void set_ru(GtkWidget *widget, t_s *s) {
     tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
+void drop_acc(GtkWidget *widget, t_s *s) {
+    (void)widget;
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "drop_acc");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    char *res = cJSON_Print(send);
+
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    closeApp(s->h->v_window, s);
+
+}
+
 void init_chatt(t_s *s) {
     mx_1_chat_init(s);
     mx_2_chat_init(s);
     mx_3_chat_init(s);
     mx_4_chat_init(s);
-    
+    s->h->delete_id = -2;
     
     g_signal_connect(G_OBJECT(s->h->v_l_btn_en), "clicked", G_CALLBACK(set_en), s);
     g_signal_connect(G_OBJECT(s->h->v_l_btn_ru), "clicked", G_CALLBACK(set_ru), s);
@@ -860,6 +1054,8 @@ void init_chatt(t_s *s) {
     
     g_signal_connect(G_OBJECT(s->h->v_t_btn_b), "clicked", G_CALLBACK(set_b), s);
     g_signal_connect(G_OBJECT(s->h->v_t_btn_w), "clicked", G_CALLBACK(set_w), s);
+    g_signal_connect(G_OBJECT(s->h->v_l_btn_rm), "clicked", G_CALLBACK(drop_acc), s);
+
 
     
     g_signal_connect(G_OBJECT(s->h->v_bt_inf), "clicked", G_CALLBACK(inf), s);
@@ -965,7 +1161,8 @@ void do_logining(GtkWidget *widget, t_s *s) {
     cJSON_AddStringToObject(send, "login", s->l->login);
     cJSON_AddStringToObject(send, "pasword", s->l->pass);
     char *res = cJSON_Print(send);
-
+    if (init_server(s, s->l->argv))
+        mx_exit_chat(s);
     tls_write(s->c->tls, res, strlen(res) + 1);
     mx_init_while_login(s);
 }
@@ -1029,18 +1226,18 @@ void mx_init_logining_3(t_s *s) {
     gtk_widget_set_size_request(s->l->user_ety, 200, 50);
     gtk_widget_set_size_request(s->l->pass_ety, 200, 50);
     gtk_widget_set_size_request(s->l->ok_btn, 200, 50);
-    gtk_style_context_add_class (s->l->c_window, "lw");
-    gtk_style_context_add_class (s->l->c_main_label, "bl");
-    gtk_style_context_add_class (s->l->c_user_lbl, "bl");
-    gtk_style_context_add_class (s->l->c_pass_lbl, "bl");
-    gtk_style_context_add_class (s->l->c_user_ety, "bl");
-    gtk_style_context_add_class (s->l->c_pass_ety, "bl");
-    gtk_style_context_add_class (s->l->c_ok_button, "bl");
-    gtk_style_context_add_class (s->l->c_ok_button, "ok_btn");
-    gtk_style_context_add_class (s->l->c_main_label, "main_l");
-    gtk_style_context_add_class (s->l->c_error_label, "error");
-    gtk_style_context_add_class (s->l->c_user_ety, "lent");
-    gtk_style_context_add_class (s->l->c_pass_ety, "lent");
+    gtk_style_context_add_class(s->l->c_window, "lw");
+    gtk_style_context_add_class(s->l->c_main_label, "bl");
+    gtk_style_context_add_class(s->l->c_user_lbl, "bl");
+    gtk_style_context_add_class(s->l->c_pass_lbl, "bl");
+    gtk_style_context_add_class(s->l->c_user_ety, "bl");
+    gtk_style_context_add_class(s->l->c_pass_ety, "bl");
+    gtk_style_context_add_class(s->l->c_ok_button, "bl");
+    gtk_style_context_add_class(s->l->c_ok_button, "ok_btn");
+    gtk_style_context_add_class(s->l->c_main_label, "main_l");
+    gtk_style_context_add_class(s->l->c_error_label, "error");
+    gtk_style_context_add_class(s->l->c_user_ety, "lent");
+    gtk_style_context_add_class(s->l->c_pass_ety, "lent");
 }
 
 void mx_init_logining_4(t_s *s) {
@@ -1065,6 +1262,7 @@ void mx_init_logining_4(t_s *s) {
 }
 
 void mx_client_init(t_s *s, int argc, char *argv[]){
+    s->l->argv = argv;
     gtk_init(&argc, &argv);
     mx_init_logining_1(s);
     mx_init_logining_2(s);
@@ -1078,157 +1276,6 @@ void mx_client_init(t_s *s, int argc, char *argv[]){
 
 
 
-
-void mx_report_1(time_t t, const char *ocsp_url, t_s *s, char *host) {
-    fprintf(stderr, "\nTLS handshake negotiated %s/%s with host %s\n",
-            tls_conn_version(s->c->tls), tls_conn_cipher(s->c->tls), host);
-    fprintf(stderr, "Peer name: %s\n", host);
-    if (tls_peer_cert_subject(s->c->tls))
-        fprintf(stderr, "Subject: %s\n",
-                tls_peer_cert_subject(s->c->tls));
-    if (tls_peer_cert_issuer(s->c->tls))
-        fprintf(stderr, "Issuer: %s\n",
-                tls_peer_cert_issuer(s->c->tls));
-    if ((t = tls_peer_cert_notbefore(s->c->tls)) != -1)
-        fprintf(stderr, "Valid From: %s", ctime(&t));
-    if ((t = tls_peer_cert_notafter(s->c->tls)) != -1)
-        fprintf(stderr, "Valid Until: %s", ctime(&t));
-    if (tls_peer_cert_hash(s->c->tls))
-        fprintf(stderr, "Cert Hash: %s\n",
-                tls_peer_cert_hash(s->c->tls));
-    ocsp_url = tls_peer_ocsp_url(s->c->tls);
-    if (ocsp_url != NULL)
-        fprintf(stderr, "OCSP URL: %s\n", ocsp_url);
-}
-
-void mx_report_2(time_t t, t_s *s) {
-    fprintf(stderr, "OCSP Stapling: %s\n",
-            tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
-            tls_peer_ocsp_result(s->c->tls));
-    fprintf(stderr,
-            " response_status=%d cert_status=%d crl_reason=%d\n",
-            tls_peer_ocsp_response_status(s->c->tls),
-            tls_peer_ocsp_cert_status(s->c->tls),
-            tls_peer_ocsp_crl_reason(s->c->tls));
-    t = tls_peer_ocsp_this_update(s->c->tls);
-    fprintf(stderr, "  this update: %s",
-            t != -1 ? ctime(&t) : "\n");
-    t =  tls_peer_ocsp_next_update(s->c->tls);
-    fprintf(stderr, "  next update: %s",
-            t != -1 ? ctime(&t) : "\n");
-    t =  tls_peer_ocsp_revocation_time(s->c->tls);
-    fprintf(stderr, "  revocation: %s",
-            t != -1 ? ctime(&t) : "\n");
-}
-
-void mx_report_tls_client(t_s *s, char *host) {
-    time_t t = 0;
-    const char *ocsp_url;
-
-    mx_report_1(t, ocsp_url, s, host);
-    switch (tls_peer_ocsp_response_status(s->c->tls)) {
-        case TLS_OCSP_RESPONSE_SUCCESSFUL:
-            mx_report_2(t, s);
-            break;
-        case -1:
-            break;
-        default:
-            fprintf(stderr, "OCSP Stapling: fail-response_status %d (%s)\n",
-                    tls_peer_ocsp_response_status(s->c->tls),
-                    tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
-                    tls_peer_ocsp_result(s->c->tls));
-            break;
-    }
-}
-
-
-
-
-void first_serv_init(t_s *s) {
-    s->c->enable = 1;
-    if (tls_init() < 0) {
-        printf("tls_init error\n");
-        exit(1);
-    }
-    s->c->cnf = tls_config_new();
-    s->c->tls = tls_client();
-    tls_config_insecure_noverifycert(s->c->cnf);
-    tls_config_insecure_noverifyname(s->c->cnf);
-    if (tls_config_set_key_file(s->c->cnf, "./certificates/client.key") < 0) {
-        printf("tls_config_set_key_file error\n");
-        exit(1);
-    }
-    if (tls_config_set_cert_file(s->c->cnf, 
-                                 "./certificates/client.pem") < 0) {
-        printf("tls_config_set_cert_file error\n");
-        exit(1);
-    }
-    tls_configure(s->c->tls, s->c->cnf);
-    memset(&s->c->h, 0, sizeof(s->c->h));
-}
-
-int second_serv_init(t_s *s, char **argv) {
-    s->c->h.ai_socktype = SOCK_STREAM;
-    if ((s->c->err = getaddrinfo(argv[1], argv[2], 
-                                 &s->c->h, &s->c->p_ad)) != 0) {
-        fprintf(stderr, "getaddrinfo()fail. (%s)\n", gai_strerror(s->c->err));
-        return 1;
-    }
-    printf("Remote address is: ");
-    getnameinfo(s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen,
-                s->c->address_buffer, sizeof(s->c->address_buffer),
-                s->c->service_buffer, sizeof(s->c->service_buffer),
-                NI_NUMERICHOST);
-    printf("%s %s\n", s->c->address_buffer, s->c->service_buffer);
-    s->c->sock = socket(s->c->p_ad->ai_family,
-                  s->c->p_ad->ai_socktype, s->c->p_ad->ai_protocol);
-    if (s->c->sock == -1) {
-        printf("error sock = %s\n", strerror(errno));
-        return 1;
-    }
-    return 0;
-}
-
-int third_serv_init(t_s *s) {
-    setsockopt(s->c->sock, IPPROTO_TCP, SO_KEEPALIVE,
-               &s->c->enable, sizeof(int));
-    if (connect(s->c->sock, s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen)) {
-        printf("connect error = %s\n", strerror(errno));
-        return 1;
-    }
-    freeaddrinfo(s->c->p_ad);
-    printf("connect TCP sock =%d\n", s->c->sock);
-
-    if (tls_connect_socket(s->c->tls, s->c->sock, "uchat_server") < 0) {
-        printf("tls_connect error\n");
-        printf("%s\n", tls_error(s->c->tls));
-        exit(1);
-    }
-    printf("tls connect +\n");
-    return 0;
-}
-
-int init_server(t_s *s, char **argv) {
-    first_serv_init(s);
-    if (second_serv_init(s, argv))
-        return 1;
-    if (third_serv_init(s))
-        return 1;
-    if (tls_handshake(s->c->tls) < 0) {
-        printf("tls_handshake error\n");
-        printf("%s\n", tls_error(s->c->tls));
-        exit(1);
-    }
-    mx_report_tls_client(s, "client");
-    printf("\n");
-    s->c->rc = 0;
-    s->c->pfd[0].fd = 0;
-    s->c->pfd[0].events = POLLIN;
-    s->c->pfd[1].fd = s->c->sock;
-    s->c->pfd[1].events = POLLIN;
-    return 0;
-}
-
 int main(int argc, char **argv) {
     if (argc < 3) {
         mx_printerr("usage: uchat [ip_adress] [port]\n");
@@ -1239,7 +1286,6 @@ int main(int argc, char **argv) {
     s->c = malloc(sizeof(t_clt));
     s->l = malloc(sizeof(t_lgn));
     s->h = malloc(sizeof(t_ct));
-    if (init_server(s, argv))
-        mx_exit_chat(s);
+    
     mx_client_init(s, argc, argv);
 }
