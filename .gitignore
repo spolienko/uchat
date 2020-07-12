@@ -3,8 +3,10 @@
 *.out
 *.exe
 *.swp
-*.a
+*.o
 ._DS_Store
 chat.sqlite
 uchat
 uchat_server
+cjson_lib.a
+uchat_server.log

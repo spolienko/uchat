@@ -1,0 +1,38 @@
+{
+	"folders": [
+		{
+			"path": "../../../asd"
+		},
+		{
+			"path": "../../../../Downloads/Archive"
+		},
+		{
+			"path": "../../../../Downloads/online_shop"
+		},
+		{
+			"path": "../../../../Downloads/untitled folder"
+		},
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"complex": "c"
+		},
+		"liveServer.settings.multiRootWorkspaceName": "online_shop",
+		"workbench.editorAssociations": [
+		],
+		"editor.rulers": [
+			{
+			  "column": 78,
+			  "color": "#ff00FF"
+			},
+			
+		],
+		"workbench.colorCustomizations": {
+		
+		},
+		
+	}
+}

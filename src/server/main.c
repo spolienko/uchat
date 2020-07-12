@@ -6,18 +6,21 @@ int main(int argc, char **argv) {
     t_connection *conn;
     t_data data;
 
-    if (argc == 2) {
+    if (argc == 2 || argc == 3) {
         port = atoi(argv[1]);
-        mx_demonize("uchat_server.log");
+        //mx_demonize("uchat_server.log");
         conn = (t_connection*)malloc(sizeof(t_connection));
         mx_database_init(&data); // Добавить компиляцию sqlite3 в Makefile
-        network_socket = mx_start_network(port);
+        if (argc == 3)
+            network_socket = mx_start_network(port, argv[2]);
+        if (argc == 2)
+            network_socket = mx_start_network(port, "null");
         mx_tls_start(conn);
         mx_start_server(&data, network_socket, conn);
         printf("Server socket: %d\n", network_socket);
     }
     else {
-        mx_printerr("usage: uchat_server [port]\n");
+        mx_printerr("usage: uchat_server [port] && if not local [ip]\n");
         exit(1);
     }
     close(network_socket);
