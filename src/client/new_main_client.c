@@ -381,15 +381,11 @@ void set_class_for_X(t_row *row, t_info *inf, t_s *s){
     (void)s;
 }
 
-gboolean check_deleting(t_for_click *c) {
-    printf("%d\t%d \n", c->inf->id, c->s->h->delete_id);
+void check_deleting(t_for_click *c) {
     if (c->s->h->delete_id == c->inf->id){
         gtk_container_remove((GtkContainer *)c->s->h->v_listbox, c->row->v_row);
-        // printf("%d\n", c->inf->id);
         c->s->h->delete_id = -2;
-        return G_SOURCE_REMOVE;
     }
-    return G_SOURCE_CONTINUE;
 }
 
 void print_X(t_row *row, t_info *inf, t_s *s) {
