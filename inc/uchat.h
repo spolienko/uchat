@@ -54,7 +54,7 @@
 
 
 
-#define MX_MAX_CONN 10
+#define MX_MAX_CONN 100
 
 /* ihumeniuk */
 
