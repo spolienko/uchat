@@ -88,6 +88,10 @@ button:hover{
     color: white;
     
 }
+
+.pading_left_100 {
+    padding-left: 100px;
+}
 .black.black_theme{
     background-color: black;
     border-color: white;

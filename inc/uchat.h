@@ -27,7 +27,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <resolv.h>
-
+#include <time.h> 
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>

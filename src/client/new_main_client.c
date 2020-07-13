@@ -23,7 +23,6 @@ typedef struct s_clt {
 
 typedef struct s_lgn {
     int login_in;
-    int was_connect;
     char *login;
     char *pass;
     char *lang;
@@ -61,6 +60,7 @@ typedef struct s_ct {
     char window_title[100];
     int v_n;
     int delete_id;
+    int was_connect;
 
     GtkWidget *v_window;
     GtkWidget *v_main_grid;
@@ -217,11 +217,20 @@ void do_s(GtkWidget *widget, t_s *s) {
     (void)widget;
 }
 
+void drop_sesion(t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "drop_sesion");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddNumberToObject(send, "drop_id", s->h->was_connect);
+    res = cJSON_Print(send);
+    printf("%s\n", res);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+}
+
 void set_class_for_help(t_inf_row *inf) {
     inf->c_v_body = gtk_widget_get_style_context(inf->v_body);
-    gtk_style_context_add_class(inf->c_v_body, "orange");
-    gtk_style_context_add_class(inf->c_v_body, "h2");
-    gtk_style_context_add_class(inf->c_v_body, "normal");
     gtk_style_context_add_class(inf->c_v_body, "pading_left_100");
 }
 
@@ -249,6 +258,7 @@ void inf(GtkWidget *widget, t_s *s) {
 }
 
 
+
 void closeApp(GtkWidget *window, t_s *s)
 {   
     (void)window;
@@ -256,6 +266,12 @@ void closeApp(GtkWidget *window, t_s *s)
     printf("Destroy\n");
     gtk_main_quit();
 }
+void closeApp2(GtkWidget *window, t_s *s) { 
+    printf("1\n");
+    drop_sesion(s);
+    closeApp(window, s);
+}
+
 
 char *get_cmd(char *str) {
     int arr[300];
@@ -644,13 +660,22 @@ void delete_msg(t_s *s, cJSON *msg) {
     s->h->delete_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
 }
 
+void init_connect_msg(t_s *s, cJSON *msg) {
+    s->h->was_connect = cJSON_GetObjectItemCaseSensitive(msg, "conn_id")->valueint;
+    // printf("%d\n", s->h->was_connect);
+}
+
+
 void check_mesage_from_serv(t_s *s, cJSON *msg) {
     char *ch = cJSON_GetObjectItemCaseSensitive(msg, "kind")->valuestring;
+
 
     if (!strcmp(ch, "msg"))
         create_msg(s, msg);
     if (!strcmp(ch, "delete"))
         delete_msg(s, msg);
+    if (!strcmp(ch, "connection"))
+        init_connect_msg(s, msg);
 }
 
 
@@ -663,6 +688,7 @@ void watcher_thread(t_s *s) {
                 break;
             // printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
             cJSON *msg = cJSON_Parse(s->c->bufs);
+            printf("%s\n", s->c->bufs);
             check_mesage_from_serv(s, msg);
         }
     }
@@ -750,7 +776,7 @@ void mx_2_chat_init(t_s *s) {
     gtk_container_add(GTK_CONTAINER(s->h->v_window), s->h->vbox);
     gtk_window_set_resizable((GtkWindow *)s->h->v_window, FALSE);
     gtk_box_pack_start(GTK_BOX(s->h->scr_box), s->h->v_scroll, TRUE, TRUE, 0);
-    gtk_widget_set_size_request(s->h->v_scroll,1800,250);
+    gtk_widget_set_size_request(s->h->v_scroll,1800,950);
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_main_e, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_bt_e, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->ent_box, TRUE, FALSE, 0);
@@ -1047,17 +1073,17 @@ void init_chatt(t_s *s) {
     g_signal_connect(G_OBJECT(s->h->v_bt_s6), "clicked", G_CALLBACK(sen7), s);
 
     gtk_container_add(GTK_CONTAINER(s->h->v_scroll), s->h->v_listbox);
-    g_signal_connect(s->h->v_window,"destroy",G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(s->h->v_window,"destroy",G_CALLBACK(closeApp2), s);
     gtk_scrolled_window_set_max_content_width ((GtkScrolledWindow *)s->h->v_scroll, 500);
     gtk_window_set_title(GTK_WINDOW(s->h->v_window), (const gchar *)"uchat");
     gtk_widget_show_all((GtkWidget *)s->h->v_window);
 
-    char *m = mx_strjoin(s->h->login, " conacted");
+    // char *m = mx_strjoin(s->h->login, " conacted");
     cJSON *send = cJSON_CreateObject();
     char *res;
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
+    cJSON_AddStringToObject(send, "kind", "connection");
+    // cJSON_AddStringToObject(send, "login", s->h->login);
+    // cJSON_AddStringToObject(send, "msg", m);
     res = cJSON_Print(send);
 
     // if (strlen(m) < 100 && strlen(m) > 0)
