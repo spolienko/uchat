@@ -24,6 +24,7 @@ typedef struct s_clt {
 typedef struct s_lgn {
     int login_in;
     char *login;
+    char **argv;
     char *pass;
     char *lang;
     char *theme;
@@ -142,6 +143,160 @@ int mx_exit_chat(t_s *s) {
     return 0;
 }
 
+
+
+
+
+void mx_report_1(time_t t, const char *ocsp_url, t_s *s, char *host) {
+    fprintf(stderr, "\nTLS handshake negotiated %s/%s with host %s\n",
+            tls_conn_version(s->c->tls), tls_conn_cipher(s->c->tls), host);
+    fprintf(stderr, "Peer name: %s\n", host);
+    if (tls_peer_cert_subject(s->c->tls))
+        fprintf(stderr, "Subject: %s\n",
+                tls_peer_cert_subject(s->c->tls));
+    if (tls_peer_cert_issuer(s->c->tls))
+        fprintf(stderr, "Issuer: %s\n",
+                tls_peer_cert_issuer(s->c->tls));
+    if ((t = tls_peer_cert_notbefore(s->c->tls)) != -1)
+        fprintf(stderr, "Valid From: %s", ctime(&t));
+    if ((t = tls_peer_cert_notafter(s->c->tls)) != -1)
+        fprintf(stderr, "Valid Until: %s", ctime(&t));
+    if (tls_peer_cert_hash(s->c->tls))
+        fprintf(stderr, "Cert Hash: %s\n",
+                tls_peer_cert_hash(s->c->tls));
+    ocsp_url = tls_peer_ocsp_url(s->c->tls);
+    if (ocsp_url != NULL)
+        fprintf(stderr, "OCSP URL: %s\n", ocsp_url);
+}
+
+void mx_report_2(time_t t, t_s *s) {
+    fprintf(stderr, "OCSP Stapling: %s\n",
+            tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
+            tls_peer_ocsp_result(s->c->tls));
+    fprintf(stderr,
+            " response_status=%d cert_status=%d crl_reason=%d\n",
+            tls_peer_ocsp_response_status(s->c->tls),
+            tls_peer_ocsp_cert_status(s->c->tls),
+            tls_peer_ocsp_crl_reason(s->c->tls));
+    t = tls_peer_ocsp_this_update(s->c->tls);
+    fprintf(stderr, "  this update: %s",
+            t != -1 ? ctime(&t) : "\n");
+    t =  tls_peer_ocsp_next_update(s->c->tls);
+    fprintf(stderr, "  next update: %s",
+            t != -1 ? ctime(&t) : "\n");
+    t =  tls_peer_ocsp_revocation_time(s->c->tls);
+    fprintf(stderr, "  revocation: %s",
+            t != -1 ? ctime(&t) : "\n");
+}
+
+void mx_report_tls_client(t_s *s, char *host) {
+    time_t t = 0;
+    const char *ocsp_url;
+
+    mx_report_1(t, ocsp_url, s, host);
+    switch (tls_peer_ocsp_response_status(s->c->tls)) {
+        case TLS_OCSP_RESPONSE_SUCCESSFUL:
+            mx_report_2(t, s);
+            break;
+        case -1:
+            break;
+        default:
+            fprintf(stderr, "OCSP Stapling: fail-response_status %d (%s)\n",
+                    tls_peer_ocsp_response_status(s->c->tls),
+                    tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
+                    tls_peer_ocsp_result(s->c->tls));
+            break;
+    }
+}
+
+
+
+
+void first_serv_init(t_s *s) {
+    s->c->enable = 1;
+    if (tls_init() < 0) {
+        printf("tls_init error\n");
+        exit(1);
+    }
+    s->c->cnf = tls_config_new();
+    s->c->tls = tls_client();
+    tls_config_insecure_noverifycert(s->c->cnf);
+    tls_config_insecure_noverifyname(s->c->cnf);
+    if (tls_config_set_key_file(s->c->cnf, "./certificates/client.key") < 0) {
+        printf("tls_config_set_key_file error\n");
+        exit(1);
+    }
+    if (tls_config_set_cert_file(s->c->cnf, 
+                                 "./certificates/client.pem") < 0) {
+        printf("tls_config_set_cert_file error\n");
+        exit(1);
+    }
+    tls_configure(s->c->tls, s->c->cnf);
+    memset(&s->c->h, 0, sizeof(s->c->h));
+}
+
+int second_serv_init(t_s *s, char **argv) {
+    s->c->h.ai_socktype = SOCK_STREAM;
+    if ((s->c->err = getaddrinfo(argv[1], argv[2], 
+                                 &s->c->h, &s->c->p_ad)) != 0) {
+        fprintf(stderr, "getaddrinfo()fail. (%s)\n", gai_strerror(s->c->err));
+        return 1;
+    }
+    printf("Remote address is: ");
+    getnameinfo(s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen,
+                s->c->address_buffer, sizeof(s->c->address_buffer),
+                s->c->service_buffer, sizeof(s->c->service_buffer),
+                NI_NUMERICHOST);
+    printf("%s %s\n", s->c->address_buffer, s->c->service_buffer);
+    s->c->sock = socket(s->c->p_ad->ai_family,
+                  s->c->p_ad->ai_socktype, s->c->p_ad->ai_protocol);
+    if (s->c->sock == -1) {
+        printf("error sock = %s\n", strerror(errno));
+        return 1;
+    }
+    return 0;
+}
+
+int third_serv_init(t_s *s) {
+    setsockopt(s->c->sock, IPPROTO_TCP, SO_KEEPALIVE,
+               &s->c->enable, sizeof(int));
+    if (connect(s->c->sock, s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen)) {
+        printf("connect error = %s\n", strerror(errno));
+        return 1;
+    }
+    freeaddrinfo(s->c->p_ad);
+    printf("connect TCP sock =%d\n", s->c->sock);
+
+    if (tls_connect_socket(s->c->tls, s->c->sock, "uchat_server") < 0) {
+        printf("tls_connect error\n");
+        printf("%s\n", tls_error(s->c->tls));
+        exit(1);
+    }
+    printf("tls connect +\n");
+    return 0;
+}
+
+int init_server(t_s *s, char **argv) {
+    first_serv_init(s);
+    if (second_serv_init(s, argv))
+        return 1;
+    if (third_serv_init(s))
+        return 1;
+    if (tls_handshake(s->c->tls) < 0) {
+        printf("tls_handshake error\n");
+        printf("%s\n", tls_error(s->c->tls));
+        exit(1);
+    }
+    mx_report_tls_client(s, "client");
+    printf("\n");
+    s->c->rc = 0;
+    s->c->pfd[0].fd = 0;
+    s->c->pfd[0].events = POLLIN;
+    s->c->pfd[1].fd = s->c->sock;
+    s->c->pfd[1].events = POLLIN;
+    return 0;
+}
+
 char *help_str_eng() {
     char *sss = "Rules: max str len 100 chars\n"
         "Comands write only: |cmd|"
@@ -191,6 +346,97 @@ char *trim(char *s) {
     return s;
 }
 
+int mx_is_digit_for_editing(char *m, int i[2]) {
+    char sss[1000];
+    sprintf(sss ,"%s\n", strndup(m+2, i[1] - 2));
+    
+    for(unsigned long hh = 0; hh < strlen(sss) - 1; hh++) {
+        if(!mx_isdigit(sss[hh]))
+            return 0;
+    }
+    return 1;
+}
+
+int is_have_editing(char *m) {
+    int i[2] = {0, 0};
+
+    if(m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|')
+                i[1] = gg;
+            if (m[gg] == '\0')
+                return 0;
+        }
+        if(m[1] == 'e') {
+            return mx_is_digit_for_editing(m, i);
+        }
+    }
+    return 0;
+}
+
+int mx_get_editing_id(char *m) {
+    int i[2] = {0, 0};
+    char sss[1000];
+    int cc;
+
+    if(m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|')
+                i[1] = gg;
+        }
+    }
+    sprintf(sss ,"%s\n", strndup(m+2, i[1] - 2));
+    cc = atoi(sss);
+    return cc;
+}
+
+char *strnew(int size) {
+	char	*str;
+
+	if (!(str = (char *)malloc(sizeof(char) * size + 1)))
+		return (NULL);
+	str[size] = '\0';
+	while (size--)
+		str[size] = '\0';
+	return (str);
+}
+
+char *mx_get_new_body_e(char *m) {
+    int i[2] = {0, 0};
+    char *sss = strnew(1000);
+
+    if(m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|')
+                i[1] = gg;
+        }
+    }
+    sprintf(sss ,"%s\n", strndup(m + i[1], strlen(m) - i[1]));
+    return sss;
+}
+
+char *parsing_mes(char *m, t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+    if (is_have_editing(m)) {
+        int id_edit_mess = mx_get_editing_id(m);
+        char *new_body = mx_get_new_body_e(m);
+        printf("%s\t%d\n", new_body, id_edit_mess);
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+    }
+    else {
+        
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+    }
+    return res;
+}
+
 void do_s(GtkWidget *widget, t_s *s) {
     char *message = (char *)gtk_entry_get_text(GTK_ENTRY(s->h->v_main_e));
     if(!message || !*message)
@@ -198,7 +444,10 @@ void do_s(GtkWidget *widget, t_s *s) {
     char *m = malloc(strlen(message) + 1);    
     strcpy(m, trim(message));
     cJSON *send = cJSON_CreateObject();
-    char *res;
+    char *res = parsing_mes(m, s);
+
+    printf("%s\n",m);
+
     cJSON_AddStringToObject(send, "kind", "msg");
     cJSON_AddStringToObject(send, "login", s->h->login);
     cJSON_AddStringToObject(send, "msg", m);
@@ -206,12 +455,17 @@ void do_s(GtkWidget *widget, t_s *s) {
 
     // if (strlen(m) < 100 && strlen(m) > 0)
     // // message_send(m);
-    printf("%s\n", res);
+    // printf("%s\n", res);
     // else {
     //     printf("to manywords\n");
     // }
-    tls_write(s->c->tls, res, strlen(res) + 1);
-
+    if (strlen(m) < 106 && strlen(m) > 0) {
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        printf("%s\n", res);
+    }
+    else {
+        printf("to manywords\n");
+    }
     gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
 
     (void)widget;
@@ -474,10 +728,12 @@ typedef struct s_row {
     GtkWidget *v_time;
     GtkWidget *v_body;
     GtkWidget *v_bt_del;
+    GtkWidget *v_bt_ed;
     GtkStyleContext *c_v_author;
     GtkStyleContext *c_v_time;
     GtkStyleContext *c_v_body;
     GtkStyleContext *c_v_bt_del;
+    GtkStyleContext *c_v_bt_ed;
 }              t_row;
 
 void init_row(t_row *row, t_info *inf, t_s *s) {
@@ -538,7 +794,6 @@ void print_X(t_row *row, t_info *inf, t_s *s) {
     c->inf = inf;
     c->s = s;
     if(!strcmp(inf->author, s->h->login)) {
-
         row->v_bt_del = gtk_button_new_with_label("X");
         gtk_widget_set_name(row->v_bt_del, "X");
         gtk_box_pack_start(GTK_BOX(row->v_hrow), 
@@ -547,7 +802,140 @@ void print_X(t_row *row, t_info *inf, t_s *s) {
         g_signal_connect(G_OBJECT(row->v_bt_del), "clicked", G_CALLBACK(delete), c);
     }
     
-    g_timeout_add(100, (GSourceFunc)check_deleting, c);
+    g_timeout_add(50, (GSourceFunc)check_deleting, c);
+}
+
+void edit(GtkWidget *widget, t_for_click *c) {
+    char mes[150];
+    sprintf(mes, "|e%d|", c->inf->id);
+
+    gtk_entry_set_text(GTK_ENTRY(c->s->h->v_main_e), mes);
+    (void)widget;
+}
+
+void print_E(t_row *row, t_info *inf, t_s *s) {
+    t_for_click *c = malloc(sizeof(t_for_click));
+    c->row = row;
+    c->inf = inf;
+    c->s = s;
+    if(!strcmp(inf->author, s->h->login)) {
+        row->v_bt_ed = gtk_button_new_with_label("E");
+        gtk_widget_set_name(row->v_bt_ed, "E");
+        gtk_box_pack_start(GTK_BOX(row->v_hrow), 
+        row->v_bt_ed, FALSE, FALSE, 0);
+        // set_class_for_X(row, inf, s);
+        g_signal_connect(G_OBJECT(row->v_bt_ed), "clicked", G_CALLBACK(edit), c);
+    }
+    
+    g_timeout_add(50, (GSourceFunc)check_deleting, c);
+}
+
+void set_bold_line(t_row *row) {
+    gtk_style_context_add_class (row->c_v_author, "bold");
+    gtk_style_context_add_class (row->c_v_time, "bold");
+    gtk_style_context_add_class (row->c_v_body, "bold");
+}
+
+void set_italic_line(t_row *row) {
+    gtk_style_context_add_class (row->c_v_author, "italic");
+    gtk_style_context_add_class (row->c_v_time, "italic");
+    gtk_style_context_add_class (row->c_v_body, "italic");
+}
+
+
+void set_red_line(t_row *row) {
+    gtk_style_context_add_class (row->c_v_author, "red");
+    gtk_style_context_add_class (row->c_v_time, "red");
+    gtk_style_context_add_class (row->c_v_body, "red");
+    // if(!strcmp(inf->author, chat->login)) {
+    //     gtk_style_context_add_class (row->c_v_bt_del, "red");
+    // }   
+}
+
+void set_lime_line(t_row *row) {
+    gtk_style_context_add_class (row->c_v_author, "lime");
+    gtk_style_context_add_class (row->c_v_time, "lime");
+    gtk_style_context_add_class (row->c_v_body, "lime");
+    // if(!strcmp(inf->author, chat->login)) {
+    //     gtk_style_context_add_class (row->c_v_bt_del, "lime");
+    // }   
+}
+
+void set_orange_line(t_row *row) {
+    gtk_style_context_add_class (row->c_v_author, "orange");
+    gtk_style_context_add_class (row->c_v_time, "orange");
+    gtk_style_context_add_class (row->c_v_body, "orange");
+    // if(!strcmp(inf->author, chat->login)) {
+    //     gtk_style_context_add_class (row->c_v_bt_del, "orange");
+    // }   
+}
+
+void set_h1_line(t_row *row) {
+    gtk_style_context_add_class (row->c_v_author, "h1");
+    gtk_style_context_add_class (row->c_v_time, "h1");
+    gtk_style_context_add_class (row->c_v_body, "h1");
+    // if (!strcmp(inf->author, chat->login)) {
+    //     gtk_style_context_add_class (row->c_v_bt_del, "h1");
+    // }
+}
+
+void set_h2_line(t_row *row) {
+    gtk_style_context_add_class (row->c_v_author, "h2");
+    gtk_style_context_add_class (row->c_v_time, "h2");
+    gtk_style_context_add_class (row->c_v_body, "h2");
+    // if(!strcmp(inf->author, chat->login)) {
+    //     gtk_style_context_add_class (row->c_v_bt_del, "h2");
+    // }
+}
+
+void set_styles_for_mess(t_row *row, char *str, t_info *inf) {
+    if (!check_on_cmd(inf->body) && inf->body[0] == '|') {
+        if (str[0] == 'b')
+            set_bold_line(row);
+        if (str[0] == 'i')
+            set_italic_line(row);
+        if (str[1] == 'r')
+            set_red_line(row);
+        if (str[1] == 'l')
+            set_lime_line(row);
+        if (str[1] == 'o')
+            set_orange_line(row);
+        if (str[2] == '1')
+            set_h1_line(row);
+        if (str[2] == '2')
+            set_h2_line(row);
+    }
+}
+
+
+
+char *parsing_cmd(char *str) {
+    char *strr = get_cmd(str);
+    char *strrr = strnew(3);
+    int cn = 0;
+
+    while(strr[cn] != '\0') {
+        if(strr[cn] == 'b' || strr[cn] == 'i' ) {
+            strrr[0] = strr[cn];
+        }
+        if (strr[cn] == 'r' || strr[cn] == 'l' || strr[cn] == 'o') {
+           strrr[1] = strr[cn];
+        }
+        if(strr[cn] == '1' || strr[cn] == '2' ) {
+            strrr[2] = strr[cn];
+        }
+        cn++;
+    }
+    return strrr;
+}
+
+void set_class_for_elem(t_row *row, t_info *inf) {
+    row->c_v_author = gtk_widget_get_style_context(row->v_author);
+    row->c_v_time = gtk_widget_get_style_context(row->v_time);
+    row->c_v_body = gtk_widget_get_style_context(row->v_body);
+    char *str = parsing_cmd(inf->body);
+    
+    set_styles_for_mess(row, str, inf);
 }
 
 void end_initing(t_row *row, t_info *inf, t_s *s) {
@@ -558,7 +946,8 @@ void end_initing(t_row *row, t_info *inf, t_s *s) {
     //     gtk_label_set_xalign((GtkLabel *)row->v_body, 0.04);
     gtk_widget_set_size_request(row->v_body,80,30);
     print_X(row, inf, s);
-    // set_class_for_elem(row, inf, chat);
+    print_E(row, inf, s);
+    set_class_for_elem(row, inf);
 }
 
 void do_print_img(t_row *row, t_info *inf, GdkPixbuf *pixbuf){
@@ -622,25 +1011,45 @@ void print_cmd(t_row *row, t_info *inf) {
         print_text(row, inf);
 }
 
-// char *get_new_body(char *str) {
-//     char *new_str = strdup(str);
+char *get_new_body_str(char *new_str) {
+    int arr[2] = {0, 0};
 
-//     if (is_have_cmd(new_str)) {
-//         new_str = get_new_body_str(new_str);
-//     }
-//     return new_str;
-// }
+    if(new_str[1] == '|')
+        arr[1] = 1;
+    else if(new_str[2] == '|')
+        arr[1] = 2;
+    else if(new_str[3] == '|')
+        arr[1] = 3;
+    else if(new_str[4] == '|')
+        arr[1] = 4;
+    return new_str + arr[1] + 1;
+}
+
+int is_have_cmd(char *str) {
+    if (str[0] == '|' && (str[2] == '|' || str[3] == '|' 
+        || str[4] == '|' || str[1] == '|'))
+        return 1;
+    return 0;
+}
+
+char *get_new_body(char *str) {
+    char *new_str = strdup(str);
+
+    if (is_have_cmd(new_str)) {
+        new_str = get_new_body_str(new_str);
+    }
+    return new_str;
+}
 
 void create_row(t_info *inf, t_s *s) {   
     t_row *row = malloc(sizeof(t_row));
-
     init_row(row, inf, s);
     if (check_on_cmd(inf->body)) {
         print_cmd(row, inf);
     }
     else if (!check_on_cmd(inf->body)) {
-        // char *new_body = get_new_body(inf->body);
-        row->v_body = gtk_label_new(inf->body);
+        char *new_body = get_new_body(inf->body);
+        row->v_body = gtk_label_new(new_body);
     }
     end_initing(row, inf, s);
     gtk_widget_show_all(s->h->v_window);
@@ -653,7 +1062,12 @@ void create_msg(t_s *s, cJSON *msg) {
     inf->body = cJSON_GetObjectItemCaseSensitive(msg, "msg")->valuestring;
     inf->timebuf = cJSON_GetObjectItemCaseSensitive(msg, "time")->valuestring;
     inf->id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
+    int sound = cJSON_GetObjectItemCaseSensitive(msg, "sound")->valueint;
+    
+    if(sound)
+        write(1,"\a",1);
     create_row(inf, s);
+
 }
 
 void delete_msg(t_s *s, cJSON *msg) {
@@ -1165,7 +1579,8 @@ void do_logining(GtkWidget *widget, t_s *s) {
     cJSON_AddStringToObject(send, "login", s->l->login);
     cJSON_AddStringToObject(send, "pasword", s->l->pass);
     char *res = cJSON_Print(send);
-
+    if (init_server(s, s->l->argv))
+        mx_exit_chat(s);
     tls_write(s->c->tls, res, strlen(res) + 1);
     mx_init_while_login(s);
 }
@@ -1279,157 +1694,6 @@ void mx_client_init(t_s *s, int argc, char *argv[]){
 
 
 
-void mx_report_1(time_t t, const char *ocsp_url, t_s *s, char *host) {
-    fprintf(stderr, "\nTLS handshake negotiated %s/%s with host %s\n",
-            tls_conn_version(s->c->tls), tls_conn_cipher(s->c->tls), host);
-    fprintf(stderr, "Peer name: %s\n", host);
-    if (tls_peer_cert_subject(s->c->tls))
-        fprintf(stderr, "Subject: %s\n",
-                tls_peer_cert_subject(s->c->tls));
-    if (tls_peer_cert_issuer(s->c->tls))
-        fprintf(stderr, "Issuer: %s\n",
-                tls_peer_cert_issuer(s->c->tls));
-    if ((t = tls_peer_cert_notbefore(s->c->tls)) != -1)
-        fprintf(stderr, "Valid From: %s", ctime(&t));
-    if ((t = tls_peer_cert_notafter(s->c->tls)) != -1)
-        fprintf(stderr, "Valid Until: %s", ctime(&t));
-    if (tls_peer_cert_hash(s->c->tls))
-        fprintf(stderr, "Cert Hash: %s\n",
-                tls_peer_cert_hash(s->c->tls));
-    ocsp_url = tls_peer_ocsp_url(s->c->tls);
-    if (ocsp_url != NULL)
-        fprintf(stderr, "OCSP URL: %s\n", ocsp_url);
-}
-
-void mx_report_2(time_t t, t_s *s) {
-    fprintf(stderr, "OCSP Stapling: %s\n",
-            tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
-            tls_peer_ocsp_result(s->c->tls));
-    fprintf(stderr,
-            " response_status=%d cert_status=%d crl_reason=%d\n",
-            tls_peer_ocsp_response_status(s->c->tls),
-            tls_peer_ocsp_cert_status(s->c->tls),
-            tls_peer_ocsp_crl_reason(s->c->tls));
-    t = tls_peer_ocsp_this_update(s->c->tls);
-    fprintf(stderr, "  this update: %s",
-            t != -1 ? ctime(&t) : "\n");
-    t =  tls_peer_ocsp_next_update(s->c->tls);
-    fprintf(stderr, "  next update: %s",
-            t != -1 ? ctime(&t) : "\n");
-    t =  tls_peer_ocsp_revocation_time(s->c->tls);
-    fprintf(stderr, "  revocation: %s",
-            t != -1 ? ctime(&t) : "\n");
-}
-
-void mx_report_tls_client(t_s *s, char *host) {
-    time_t t = 0;
-    const char *ocsp_url;
-
-    mx_report_1(t, ocsp_url, s, host);
-    switch (tls_peer_ocsp_response_status(s->c->tls)) {
-        case TLS_OCSP_RESPONSE_SUCCESSFUL:
-            mx_report_2(t, s);
-            break;
-        case -1:
-            break;
-        default:
-            fprintf(stderr, "OCSP Stapling: fail-response_status %d (%s)\n",
-                    tls_peer_ocsp_response_status(s->c->tls),
-                    tls_peer_ocsp_result(s->c->tls) == NULL ?  "" :
-                    tls_peer_ocsp_result(s->c->tls));
-            break;
-    }
-}
-
-
-
-
-void first_serv_init(t_s *s) {
-    s->c->enable = 1;
-    if (tls_init() < 0) {
-        printf("tls_init error\n");
-        exit(1);
-    }
-    s->c->cnf = tls_config_new();
-    s->c->tls = tls_client();
-    tls_config_insecure_noverifycert(s->c->cnf);
-    tls_config_insecure_noverifyname(s->c->cnf);
-    if (tls_config_set_key_file(s->c->cnf, "./certificates/client.key") < 0) {
-        printf("tls_config_set_key_file error\n");
-        exit(1);
-    }
-    if (tls_config_set_cert_file(s->c->cnf, 
-                                 "./certificates/client.pem") < 0) {
-        printf("tls_config_set_cert_file error\n");
-        exit(1);
-    }
-    tls_configure(s->c->tls, s->c->cnf);
-    memset(&s->c->h, 0, sizeof(s->c->h));
-}
-
-int second_serv_init(t_s *s, char **argv) {
-    s->c->h.ai_socktype = SOCK_STREAM;
-    if ((s->c->err = getaddrinfo(argv[1], argv[2], 
-                                 &s->c->h, &s->c->p_ad)) != 0) {
-        fprintf(stderr, "getaddrinfo()fail. (%s)\n", gai_strerror(s->c->err));
-        return 1;
-    }
-    printf("Remote address is: ");
-    getnameinfo(s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen,
-                s->c->address_buffer, sizeof(s->c->address_buffer),
-                s->c->service_buffer, sizeof(s->c->service_buffer),
-                NI_NUMERICHOST);
-    printf("%s %s\n", s->c->address_buffer, s->c->service_buffer);
-    s->c->sock = socket(s->c->p_ad->ai_family,
-                  s->c->p_ad->ai_socktype, s->c->p_ad->ai_protocol);
-    if (s->c->sock == -1) {
-        printf("error sock = %s\n", strerror(errno));
-        return 1;
-    }
-    return 0;
-}
-
-int third_serv_init(t_s *s) {
-    setsockopt(s->c->sock, IPPROTO_TCP, SO_KEEPALIVE,
-               &s->c->enable, sizeof(int));
-    if (connect(s->c->sock, s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen)) {
-        printf("connect error = %s\n", strerror(errno));
-        return 1;
-    }
-    freeaddrinfo(s->c->p_ad);
-    printf("connect TCP sock =%d\n", s->c->sock);
-
-    if (tls_connect_socket(s->c->tls, s->c->sock, "uchat_server") < 0) {
-        printf("tls_connect error\n");
-        printf("%s\n", tls_error(s->c->tls));
-        exit(1);
-    }
-    printf("tls connect +\n");
-    return 0;
-}
-
-int init_server(t_s *s, char **argv) {
-    first_serv_init(s);
-    if (second_serv_init(s, argv))
-        return 1;
-    if (third_serv_init(s))
-        return 1;
-    if (tls_handshake(s->c->tls) < 0) {
-        printf("tls_handshake error\n");
-        printf("%s\n", tls_error(s->c->tls));
-        exit(1);
-    }
-    mx_report_tls_client(s, "client");
-    printf("\n");
-    s->c->rc = 0;
-    s->c->pfd[0].fd = 0;
-    s->c->pfd[0].events = POLLIN;
-    s->c->pfd[1].fd = s->c->sock;
-    s->c->pfd[1].events = POLLIN;
-    return 0;
-}
-
-
 int main(int argc, char **argv) {
     if (argc < 3) {
         mx_printerr("usage: uchat [ip_adress] [port]\n");
@@ -1440,8 +1704,7 @@ int main(int argc, char **argv) {
     s->c = malloc(sizeof(t_clt));
     s->l = malloc(sizeof(t_lgn));
     s->h = malloc(sizeof(t_ct));
-    if (init_server(s, argv))
-        mx_exit_chat(s);
+    s->l->argv = argv;
     mx_client_init(s, argc, argv);
     
 }

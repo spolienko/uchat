@@ -9,6 +9,7 @@ static char *prepea_cjson(int id, char *time, char *login, char *msg) {
     cJSON_AddStringToObject(send, "time", time);
     cJSON_AddStringToObject(send, "login", login);
     cJSON_AddStringToObject(send, "msg", msg);
+    cJSON_AddNumberToObject(send, "sound", 0);
     res = cJSON_Print(send);
     cJSON_Delete(send);
     return res;

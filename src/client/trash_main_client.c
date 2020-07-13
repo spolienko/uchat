@@ -168,16 +168,7 @@ char *trim(char *s) {
 // }
 
 
-char *strnew(int size) {
-	char	*str;
 
-	if (!(str = (char *)malloc(sizeof(char) * size + 1)))
-		return (NULL);
-	str[size] = '\0';
-	while (size--)
-		str[size] = '\0';
-	return (str);
-}
 
 int *watcher_thread(t_chat *chat);
 
@@ -867,8 +858,6 @@ void set_class_for_elem(t_row *row, t_info *inf, t_chat *chat) {
     char *str = parsing_cmd(inf->body);
     
     set_styles(row, inf, chat, str);
-    printf("%s\n",str);
-
 }
 
 void end_initing(t_row *row, t_info *inf, t_chat *chat) {

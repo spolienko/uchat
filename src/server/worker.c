@@ -144,7 +144,7 @@ static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connecti
     
     switch (check_kind(buf)) {
         case 1:
-            mx_do_login(data, buf, tlsconn);
+            mx_do_login(data, buf, tlsconn, conn);
             break;
         case 2:
             res = mx_do_msg(data, buf);
@@ -222,6 +222,7 @@ int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
     rc = tls_read(conn->connection_array[kEvent->ident], buf, sizeof(buf));
     if (rc > 0 ) {
         buf[rc] = 0;
+        data->connecting = kEvent->ident;
         msg = do_message(data, buf, (struct tls *)conn->connection_array[kEvent->ident], conn);
         for(int i = 3; i <= MX_MAX_CONN; i++){
             if (msg != NULL && (struct tls *)conn->connection_array[i] != NULL ) {

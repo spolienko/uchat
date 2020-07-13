@@ -13,6 +13,7 @@ char *mx_do_msg(t_data *data, char *buf) {
     cJSON_AddStringToObject(send, "msg", msg);
     cJSON_AddStringToObject(send, "time", time);
     cJSON_AddNumberToObject(send, "id", msg_id);
+    cJSON_AddNumberToObject(send, "sound", 1);
     mx_strdel(&msg);
     msg = cJSON_Print(send);
     return msg;

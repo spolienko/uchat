@@ -119,6 +119,10 @@ button:hover{
 
 }
 
+#E{
+    border-width:0 ;
+}
+
 .black_theme:hover, .white_theme:hover{
     border-color: orange;
 }
@@ -128,8 +132,34 @@ button:hover{
     border: none;
     padding:0 20px;
     box-shadow: inset 0px 0px rgba(0, 0, 0, 0), 0 0px white;
-    text-shadow: none;
 }
+
+
+.bold {
+    font-weight: bold;
+}
+
+.h2{
+    font-size: 25px;
+}
+.h1{
+    font-size: 16px;
+}
+
+.orange, .orange label{
+    color:orange ;
+}
+.red {
+    color:red;
+}
+.lime{
+    color:lime;
+}
+
+.italic{
+    font-style:  italic;
+}
+
 /* 
 
 

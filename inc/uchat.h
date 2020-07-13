@@ -59,12 +59,20 @@
 
 /* ihumeniuk */
 
+
+
 typedef struct s_data {
     sqlite3 *database;
     pthread_mutex_t msg_mutex;
     sqlite3_stmt *stmt;
     long long last_msg_id;
+    int connecting;
 } t_data;
+typedef struct s_connection {
+    struct tls_config *config;
+    struct tls *connection_array[MX_MAX_CONN];
+    struct tls *tls;
+} t_connection;
 
 void mx_database_init(t_data *data);
 char *mx_chat_get_user_password(t_data *data, char *login);
@@ -75,7 +83,7 @@ char * mx_chat_new_message(t_data *data, char *login, char *msg);
 void mx_chat_delete_session(t_data *data, const char *login);
 
 int mx_check_login(t_data *data, char *login, char *pas);
-void mx_do_login(t_data *data, char *buf, struct tls *tls);
+void mx_do_login(t_data *data, char *buf, struct tls *tlscon, t_connection *conn);
 char *mx_time_to_str(void);
 char *mx_do_msg(t_data *data, char *buf);
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg);
@@ -86,11 +94,7 @@ void mx_chat_send_history(t_data *data, struct tls *tlscon);
 
 /* server */
 
-typedef struct s_connection {
-    struct tls_config *config;
-    struct tls *connection_array[MX_MAX_CONN];
-    struct tls *tls;
-} t_connection;
+
 
 void mx_start_server(t_data *data, int socket, t_connection *conn);
 void mx_demonize(char *logfile);
