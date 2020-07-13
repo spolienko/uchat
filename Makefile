@@ -36,8 +36,9 @@ SRC_CLIENT = new_main_client.c
 OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
 
-CFLAGS = -std=c11  -Wall -Wextra -Werror -Wpedantic \
-		 	-Wno-pedantic -g -fsanitize=address -Wno-unused-command-line-argument \
+CFLAGS = -std=c11  $(addprefix -W, all extra error pedantic) \
+		 	$(addprefix -Wno, -unused-command-line-argument -pedantic) \
+			 -g -fsanitize=address \
 		 	`pkg-config --cflags --libs gtk+-3.0`
 
 CFLAGS2 = -std=c11 -g -fsanitize=address -Wall -Wextra -Wpedantic -Werror

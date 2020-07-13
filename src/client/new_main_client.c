@@ -1429,17 +1429,6 @@ int init_server(t_s *s, char **argv) {
     return 0;
 }
 
-void listening_server(t_s *s) {
-    while (true) {
-        bzero(s->c->bufs, 1000);
-        poll(s->c->pfd, 2, -1);
-        if (s->c->pfd[1].revents & POLLIN) {
-            if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) 
-                break;
-            printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
-        }
-    }
-}
 
 int main(int argc, char **argv) {
     if (argc < 3) {
@@ -1454,11 +1443,5 @@ int main(int argc, char **argv) {
     if (init_server(s, argv))
         mx_exit_chat(s);
     mx_client_init(s, argc, argv);
-    pthread_t thread_input;
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    int tc = pthread_create(&thread_input, &attr, (void * _Nullable (* _Nonnull)(void * _Nullable))listening_server, s);
-    if (tc != 0)
-        printf("pthread_create error = %s\n", strerror(tc));
+    
 }
