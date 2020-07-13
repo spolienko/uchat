@@ -8,8 +8,7 @@
     text-decoration: none;
     border-radius: 0;
     font-size: 18px;
-    box-shadow: inset 0px 0px rgba(0, 0, 0, 0), 0 0px white;
-    text-shadow: none;
+    
 }
 
 button{
@@ -128,6 +127,8 @@ button:hover{
     background: transparent;
     border: none;
     padding:0 20px;
+    box-shadow: inset 0px 0px rgba(0, 0, 0, 0), 0 0px white;
+    text-shadow: none;
 }
 /* 
 

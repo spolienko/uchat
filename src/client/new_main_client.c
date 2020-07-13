@@ -547,7 +547,7 @@ void print_X(t_row *row, t_info *inf, t_s *s) {
         g_signal_connect(G_OBJECT(row->v_bt_del), "clicked", G_CALLBACK(delete), c);
     }
     
-    g_timeout_add(500, (GSourceFunc)check_deleting, c);
+    g_timeout_add(100, (GSourceFunc)check_deleting, c);
 }
 
 void end_initing(t_row *row, t_info *inf, t_s *s) {
@@ -1436,7 +1436,7 @@ int main(int argc, char **argv) {
         return -1;
     }
     t_s *s = malloc(sizeof(t_s));
-
+    // signal(SIGINT, SIG_IGN);
     s->c = malloc(sizeof(t_clt));
     s->l = malloc(sizeof(t_lgn));
     s->h = malloc(sizeof(t_ct));

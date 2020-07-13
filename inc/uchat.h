@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <signal.h>
 
 #include <string.h>
 #include <sys/socket.h>
