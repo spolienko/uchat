@@ -3,7 +3,6 @@
 
 
 
-
 typedef struct s_clt {
     struct addrinfo h;
     struct addrinfo *p_ad;
@@ -411,21 +410,79 @@ char *mx_get_new_body_e(char *m) {
                 i[1] = gg;
         }
     }
-    sprintf(sss ,"%s\n", strndup(m + i[1], strlen(m) - i[1]));
+    sprintf(sss ,"%s", strndup(m + i[1] + 1, strlen(m) - i[1] - 1));
     return sss;
+}
+
+
+
+
+
+
+
+
+char *edit_creating(char *m, t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    int id_edit_mess = mx_get_editing_id(m);
+    char *new_body = mx_get_new_body_e(m);
+    
+    cJSON_AddStringToObject(send, "kind", "edit");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", new_body);
+    cJSON_AddNumberToObject(send, "edit_id", id_edit_mess);
+    return cJSON_Print(send);
+}
+
+int is_have_drop(char *m) {
+    int i[2] = {0, 0};
+
+    if(m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|')
+                i[1] = gg;
+            if (m[gg] == '\0')
+                return 0;
+        }
+        if (strlen(m) > 4)
+            if(m[1] == 'k' &&  m[2] == '_') {
+                return 1;
+            }
+    }
+    return 0;
+}
+
+char *mx_get_user_drop(char *m) {
+    int i[2] = {0, 0};
+    char *sss = strnew(1000);
+
+    if(m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|')
+                i[1] = gg;
+        }
+    }
+    sprintf(sss, "%s", strndup(m + 3, i[1] - 3));
+    return sss;
+}
+
+char *drop_creating(char *m, t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    char *user_drop = mx_get_user_drop(m);
+    
+    cJSON_AddStringToObject(send, "kind", "drop_user");
+    cJSON_AddStringToObject(send, "admin", s->h->login);
+    cJSON_AddStringToObject(send, "drop_user", user_drop);
+    return cJSON_Print(send);
 }
 
 char *parsing_mes(char *m, t_s *s) {
     cJSON *send = cJSON_CreateObject();
     char *res;
     if (is_have_editing(m)) {
-        int id_edit_mess = mx_get_editing_id(m);
-        char *new_body = mx_get_new_body_e(m);
-        printf("%s\t%d\n", new_body, id_edit_mess);
-        cJSON_AddStringToObject(send, "kind", "msg");
-        cJSON_AddStringToObject(send, "login", s->h->login);
-        cJSON_AddStringToObject(send, "msg", m);
-        res = cJSON_Print(send);
+        return edit_creating(m, s);
+    }
+    else if (is_have_drop(m)) {
+        return drop_creating(m, s);
     }
     else {
         
@@ -446,7 +503,7 @@ void do_s(GtkWidget *widget, t_s *s) {
     cJSON *send = cJSON_CreateObject();
     char *res = parsing_mes(m, s);
 
-    printf("%s\n",m);
+    printf("%s\n",res);
 
     cJSON_AddStringToObject(send, "kind", "msg");
     cJSON_AddStringToObject(send, "login", s->h->login);
@@ -1454,7 +1511,7 @@ void drop_acc(GtkWidget *widget, t_s *s) {
     char *res = cJSON_Print(send);
 
     tls_write(s->c->tls, res, strlen(res) + 1);
-    closeApp(s->h->v_window, s);
+    closeApp2(s->h->v_window, s);
 
 }
 

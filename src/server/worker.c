@@ -1,5 +1,6 @@
 #include "uchat.h"
 
+
 static int check_kind(char *buf) {
     cJSON *str = cJSON_Parse(buf);
     char *kind = cJSON_GetObjectItemCaseSensitive(str, "kind")->valuestring;
@@ -21,6 +22,8 @@ static int check_kind(char *buf) {
         res = 7;
     else if (mx_strcmp(kind, "connection") == 0)
         res = 8;
+    // else if (mx_strcmp(kind, "drop_user") == 0)
+    //     res = 9;
     return res;
 }
 
@@ -166,7 +169,10 @@ static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connecti
             break;
         case 8:
             res = initing_closing();
-            break;        
+            break;
+        // case 9:
+        //     res = initing_closing();
+        //     break;       
         default:
             printf("Error reading cJSON from client\n");
         }

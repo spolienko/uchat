@@ -1,11 +1,16 @@
 #include "uchat.h"
 
+
+
 int main(int argc, char **argv) {
     int port;
     int network_socket;
     t_connection *conn;
     t_data data;
 
+    for (int gg = 0; gg < 300;gg++){
+        arr[gg] = 1;
+    }
     if (argc == 2 || argc == 3) {
         port = atoi(argv[1]);
         //mx_demonize("uchat_server.log");
