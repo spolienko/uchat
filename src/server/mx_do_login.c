@@ -11,8 +11,9 @@ void mx_do_login(t_data *data, char *buf, struct tls *tlscon, t_connection *conn
     char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
     char *msg = cJSON_GetObjectItemCaseSensitive(str, "pasword")->valuestring;
     int res = 0;
+    char *hash = crypt(msg,"1a");
     
-    res = mx_check_login(data, user, msg);
+    res = mx_check_login(data, user, hash);
     mx_strdel(&msg);
     if (res == 1 || res == 2) {
         msg =  mx_login_back(data, true, user);

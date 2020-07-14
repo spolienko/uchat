@@ -42,10 +42,8 @@ int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
                 // printf("%s\n", tls_error(conn->connection_array[client]));
                 exit(1);
             }
-
             // mx_report_tls(conn->connection_array[client], "new client connected");
-            printf("\n");
-            printf("Client connected successfully %d\n", (int)kEvent->ident);
+            printf("\nClient connected successfully %d\n", (int)kEvent->ident);
             
         }
         else {

@@ -578,7 +578,6 @@ void closeApp(GtkWidget *window, t_s *s)
     gtk_main_quit();
 }
 void closeApp2(GtkWidget *window, t_s *s) { 
-    printf("1\n");
     drop_sesion(s);
     closeApp(window, s);
 }
