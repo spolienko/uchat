@@ -13,6 +13,8 @@ int main(int argc, char **argv) {
     }
     if (argc == 2 || argc == 3) {
         port = atoi(argv[1]);
+        data.argc = argc;
+        data.argv = argv;
         //mx_demonize("uchat_server.log");
         conn = (t_connection*)malloc(sizeof(t_connection));
         mx_database_init(&data); // Добавить компиляцию sqlite3 в Makefile

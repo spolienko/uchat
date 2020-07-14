@@ -52,13 +52,7 @@
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
 
-
-
-
 #define MX_MAX_CONN 100
-
-/* ihumeniuk */
-
 
 
 typedef struct s_data {
@@ -68,6 +62,8 @@ typedef struct s_data {
     long long last_msg_id;
     int connecting;
     char *hash;
+    char **argv;
+    int argc;
 } t_data;
 
 typedef struct s_connection {
