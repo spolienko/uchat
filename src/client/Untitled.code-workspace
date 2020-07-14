@@ -1,16 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "../../../asd"
-		},
-		{
-			"path": "../../../../Downloads/Archive"
-		},
-		{
-			"path": "../../../../Downloads/online_shop"
-		},
-		{
-			"path": "../../../../Downloads/untitled folder"
+			"path": "../../../uchat"
 		},
 		{
 			"path": "../.."
@@ -18,21 +9,11 @@
 	],
 	"settings": {
 		"files.associations": {
-			"complex": "c"
-		},
-		"liveServer.settings.multiRootWorkspaceName": "online_shop",
-		"workbench.editorAssociations": [
-		],
-		"editor.rulers": [
-			{
-			  "column": 78,
-			  "color": "#ff00FF"
-			},
-			
-		],
-		"workbench.colorCustomizations": {
-		
-		},
-		
+			"array": "c",
+			"iterator": "c",
+			"string": "c",
+			"string_view": "c",
+			"vector": "c"
+		}
 	}
 }
