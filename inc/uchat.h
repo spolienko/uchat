@@ -67,7 +67,9 @@ typedef struct s_data {
     sqlite3_stmt *stmt;
     long long last_msg_id;
     int connecting;
+    char *hash;
 } t_data;
+
 typedef struct s_connection {
     struct tls_config *config;
     struct tls *connection_array[MX_MAX_CONN];
