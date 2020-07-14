@@ -77,9 +77,6 @@ char *mx_chat_get_user_password(t_data *data, char *login);
 int mx_chat_create_user(t_data *data, char *login, char *password);
 void mx_chat_create_session(t_data *data, char *login);
 char * mx_chat_new_message(t_data *data, char *login, char *msg);
-//void mx_chat_delete_last_message(t_data data, const char *login);
-void mx_chat_delete_session(t_data *data, const char *login);
-
 int mx_check_login(t_data *data, char *login, char *pas);
 void mx_do_login(t_data *data, char *buf, struct tls *tlscon, t_connection *conn);
 char *mx_time_to_str(void);
@@ -89,10 +86,13 @@ void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang);
 void mx_do_user_interface(t_data *data, char *buf);
 char *mx_login_back(t_data *data, int status, char *login);
 void mx_chat_send_history(t_data *data, struct tls *tlscon);
+void mx_drop_user_sesion(t_data *data, char *buf);
+void mx_drop_user_data(t_data *data, char *login);
+void mx_drop_user(t_data *data, char *buf);
+void mx_drop(t_data *data, int id);
+char *mx_do_delete(t_data *data, char *buf);
 
 /* server */
-
-
 
 void mx_start_server(t_data *data, int socket, t_connection *conn);
 void mx_demonize(char *logfile);

@@ -5,7 +5,7 @@ char *mx_do_msg(t_data *data, char *buf) {
     cJSON *send = cJSON_CreateObject();
     char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
     char *msg = cJSON_GetObjectItemCaseSensitive(str, "msg")->valuestring;
-    char *time = mx_chat_new_message(data, user, msg); //Добавили msg в БД
+    char *time = mx_chat_new_message(data, user, msg);
     int msg_id = mx_get_msg_id(data, user, time, msg);
     
     cJSON_AddStringToObject(send, "kind", "msg");
