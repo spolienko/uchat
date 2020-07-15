@@ -26,6 +26,10 @@ static int check_kind(char *buf) {
         res = 9;
     else if (mx_strcmp(kind, "new_password") == 0)
         res = 10;
+    else if (mx_strcmp(kind, "file") == 0)
+        res = 11;
+    else if (mx_strcmp(kind, "savefile") == 0)
+        res = 12;
     return res;
 }
 
@@ -176,7 +180,77 @@ char *drop_user_from_admin(t_data *data, char *buf) {
 
 
 
-static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connection *conn) {
+
+
+
+
+
+
+void mx_file_send(char *buf,t_connection *conn, struct kevent *kEvent) {
+    cJSON *str = cJSON_Parse(buf);
+    // int bytesReceived = 0;
+    // char recvBuff[1024];
+    (void)kEvent;
+    char *fname = cJSON_GetObjectItemCaseSensitive(str, "name")->valuestring;
+
+    for(int i = 3; i <= MX_MAX_CONN; i++) {
+        if ((struct tls *)conn->connection_array[i] != NULL ) {
+            // &&            (struct tls *)conn->connection_array[i] != (struct tls *)conn->connection_array[kEvent->ident]
+            printf("sending messege to %d\n", i);
+            tls_write((struct tls *)conn->connection_array[i], fname, strlen(fname));
+        }
+        FILE *fp = fopen(fname,"rb");
+        if(fp==NULL) {
+            printf("File opern error");
+            return ;   
+        }
+        while(1) {
+            unsigned char buff[1024]={0};
+            int nread = fread(buff,1,1024,fp);
+            if(nread > 0) {
+                tls_write((struct tls *)conn->connection_array[i], buff, nread);
+                printf("%s\n",buff);
+            }
+            if (nread < 1024) {
+                if (feof(fp)) {
+                    printf("End of file\n");
+                }
+                if (ferror(fp))
+                    printf("Error reading\n");
+                break;
+            }
+        }
+    }
+}
+
+void mx_file_save(char *buf,t_connection *conn, struct kevent *kEvent) {
+    cJSON *str = cJSON_Parse(buf);
+    int bytesReceived = 0;
+    char recvBuff[1024];
+    char *fname = cJSON_GetObjectItemCaseSensitive(str, "name")->valuestring;
+    FILE *fp;
+
+   	fp = fopen(fname, "ab");
+	if(NULL == fp) {
+       	printf("Error opening file");
+        return ;
+    }
+    while((bytesReceived = tls_read(conn->connection_array[kEvent->ident],
+                                    recvBuff, 1024)) > 0) {
+        printf("%s\n",recvBuff);
+        fflush(stdout);
+        fwrite(recvBuff, 1, sizeof(recvBuff),fp);
+    }
+    fclose(fp);
+}
+
+
+
+
+
+
+
+static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connection *conn, struct kevent *kEvent) {
     char *res = NULL;
     
     switch (check_kind(buf)) {
@@ -209,7 +283,13 @@ static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connecti
             break;
         case 10:
             change_pass(data, buf);
-            break;  
+            break;
+        case 11:
+            mx_file_save(buf, conn, kEvent);
+            break;
+        case 12:
+            mx_file_send(buf, conn, kEvent);
+            break;
         default:
             printf("Error reading cJSON from client\n");
         }
@@ -239,7 +319,7 @@ int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
     if (rc > 0 ) {
         buf[rc] = 0;
         data->connecting = kEvent->ident;
-        msg = do_message(data, buf, (struct tls *)conn->connection_array[kEvent->ident], conn);
+        msg = do_message(data, buf, (struct tls *)conn->connection_array[kEvent->ident], conn, kEvent);
         for(int i = 3; i <= MX_MAX_CONN; i++){
             if (msg != NULL && (struct tls *)conn->connection_array[i] != NULL ) {
                 printf("sending messege to %d\n", i);

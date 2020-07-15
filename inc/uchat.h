@@ -24,7 +24,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <signal.h>
-
+#include <libgen.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <resolv.h>

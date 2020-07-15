@@ -2,7 +2,6 @@
 #include "cJSON.h"
 
 
-
 typedef struct s_clt {
     struct addrinfo h;
     struct addrinfo *p_ad;
@@ -1271,7 +1270,7 @@ void create_eng(t_s *s) {
     s->h->v_bt_s3 = gtk_button_new_with_label("Danger");
     s->h->v_bt_s4 = gtk_button_new_with_label("Sad cat");
     s->h->v_bt_s5 = gtk_button_new_with_label("Question?");
-    s->h->v_bt_s6 = gtk_button_new_with_label("Hello");
+    s->h->v_bt_s6 = gtk_button_new_with_label("File");
 }
 
 void create_rus(t_s *s) {
@@ -1287,7 +1286,7 @@ void create_rus(t_s *s) {
     s->h->v_bt_s3 = gtk_button_new_with_label("Опасность");
     s->h->v_bt_s4 = gtk_button_new_with_label("Грустный Кот");
     s->h->v_bt_s5 = gtk_button_new_with_label("Вопрос?");
-    s->h->v_bt_s6 = gtk_button_new_with_label("Привет");
+    s->h->v_bt_s6 = gtk_button_new_with_label("Файл");
 }
 
 void create_content(t_s *s) {
@@ -1329,17 +1328,17 @@ void mx_2_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_t_btn_b, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_t_btn_w, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_l_btn_rm, FALSE, TRUE, 0);
-    gtk_widget_set_size_request(s->h->v_l_btn_ru, 400, 50);
-    gtk_widget_set_size_request(s->h->v_l_btn_en, 400, 50);
-    gtk_widget_set_size_request(s->h->v_t_btn_b, 400, 50);
-    gtk_widget_set_size_request(s->h->v_t_btn_w, 400, 50);
+    gtk_widget_set_size_request(s->h->v_l_btn_ru, 100, 50);
+    gtk_widget_set_size_request(s->h->v_l_btn_en, 100, 50);
+    gtk_widget_set_size_request(s->h->v_t_btn_b, 100, 50);
+    gtk_widget_set_size_request(s->h->v_t_btn_w, 100, 50);
     gtk_widget_set_size_request(s->h->v_l_btn_rm, 200, 50);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->T_b, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->scr_box, FALSE, TRUE, 0);
     gtk_container_add(GTK_CONTAINER(s->h->v_window), s->h->vbox);
     gtk_window_set_resizable((GtkWindow *)s->h->v_window, FALSE);
     gtk_box_pack_start(GTK_BOX(s->h->scr_box), s->h->v_scroll, TRUE, TRUE, 0);
-    gtk_widget_set_size_request(s->h->v_scroll,1800,950);
+    gtk_widget_set_size_request(s->h->v_scroll,600,250);
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_main_e, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_bt_e, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->ent_box, TRUE, FALSE, 0);
@@ -1357,15 +1356,15 @@ void mx_3_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->btns_b), s->h->v_bt_s4, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->btns_b), s->h->v_bt_s5, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->btns_b), s->h->v_bt_s6, FALSE, TRUE, 0);
-    gtk_widget_set_size_request(s->h->v_bt_inf,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_lik,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_aut,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_s1,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_s2,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_s3,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_s4,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_s5,200,50);
-    gtk_widget_set_size_request(s->h->v_bt_s6,200,50);
+    gtk_widget_set_size_request(s->h->v_bt_inf,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_lik,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_aut,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_s1,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_s2,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_s3,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_s4,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_s5,50,50);
+    gtk_widget_set_size_request(s->h->v_bt_s6,50,50);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->btns_b, TRUE, FALSE, 0);
 }
 
@@ -1596,6 +1595,99 @@ void set_ru(GtkWidget *widget, t_s *s) {
 
 
 
+void send_file_to_serv(char *filename, t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+    char *name = basename(filename);
+    cJSON_AddStringToObject(send, "kind", "file");
+    cJSON_AddStringToObject(send, "login", "admin");
+    cJSON_AddStringToObject(send, "name", name);
+    cJSON_AddStringToObject(send, "path", filename);
+    res = cJSON_Print(send);
+    printf("%s\n",res);
+    char *res_m = strdup(res);
+    tls_write(s->c->tls, res_m, strlen(res_m));
+    FILE *fp = fopen(filename,"rb");
+    if(fp==NULL) {
+        printf("File opern error");
+        return ;   
+    }
+    while(1) {
+        unsigned char buff[1024]={0};
+        int nread = fread(buff,1,1024,fp);
+        if(nread > 0) {
+            tls_write(s->c->tls, buff, nread);
+            printf("%s\n",buff);
+        }
+        if (nread < 1024) {
+            if (feof(fp)) {
+                printf("End of file\n");
+            }
+            if (ferror(fp))
+                printf("Error reading\n");
+            break;
+        }
+    }
+}
+
+void send_serv_request(t_s *s) {
+    // где-то взять путь к файлу который нужно выгрузить с сервера
+    char *path_to_file = (char *)gtk_entry_get_text(GTK_ENTRY(s->h->v_main_e));
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+    char *name = basename(path_to_file);
+    cJSON_AddStringToObject(send, "kind", "save_file");
+    cJSON_AddStringToObject(send, "login", "admin");
+    cJSON_AddStringToObject(send, "name", name);
+    cJSON_AddStringToObject(send, "path", path_to_file);
+    res = cJSON_Print(send);
+}
+
+// зайти в эту функцию с юи 
+void save_file_from_serv(GtkWidget *widget, t_s *s) {
+    send_serv_request(s);
+    int bytesReceived = 0;
+    char recvBuff[1024];
+    char *fname = NULL;
+    tls_read(s->c->tls, fname, 256);
+    FILE *fp;
+
+   	fp = fopen(fname, "ab");
+	if(NULL == fp) {
+       	printf("Error opening file");
+        return ;
+    }
+    while((bytesReceived = tls_read(s->c->tls, recvBuff, 1024)) > 0) {
+        printf("%s\n",recvBuff);
+        fflush(stdout);
+        fwrite(recvBuff, 1, sizeof(recvBuff),fp);
+    }
+    fclose(fp);
+    (void)widget;
+}
+
+void choise_file(GtkWidget *widget, t_s *s) {
+    GtkWidget *dialog;
+    char *filename = NULL;
+    dialog = gtk_file_chooser_dialog_new ("Open File",
+                        NULL,
+                        GTK_FILE_CHOOSER_ACTION_OPEN,
+                        "_Cancel", GTK_RESPONSE_CANCEL,
+                        "_Open", GTK_RESPONSE_ACCEPT,
+                        NULL);
+
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+
+        filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+        g_print("%s\n",filename);
+    }
+    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), filename);
+    gtk_widget_destroy(dialog);
+    (void)widget;
+}
+
+
+
 void init_chatt(t_s *s) {
     mx_1_chat_init(s);
     mx_2_chat_init(s);
@@ -1624,7 +1716,7 @@ void init_chatt(t_s *s) {
     g_signal_connect(G_OBJECT(s->h->v_bt_s3), "clicked", G_CALLBACK(sen4), s);
     g_signal_connect(G_OBJECT(s->h->v_bt_s4), "clicked", G_CALLBACK(sen5), s);
     g_signal_connect(G_OBJECT(s->h->v_bt_s5), "clicked", G_CALLBACK(sen6), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s6), "clicked", G_CALLBACK(sen7), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s6), "clicked", G_CALLBACK(choise_file), s);
 
     gtk_container_add(GTK_CONTAINER(s->h->v_scroll), s->h->v_listbox);
     g_signal_connect(s->h->v_window,"destroy",G_CALLBACK(closeApp2), s);

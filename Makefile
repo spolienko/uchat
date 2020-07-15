@@ -37,7 +37,7 @@ OBJS_SERVER = $(addprefix $(OBJD)/, $(SRC_SERVER:%.c=%.o))
 OBJS_CLIENT = $(addprefix $(OBJD)/, $(SRC_CLIENT:%.c=%.o))
 
 CFLAGS = -std=c11  $(addprefix -W, all extra error pedantic) \
-		 	$(addprefix -Wno, -unused-command-line-argument -pedantic) \
+		 	$(addprefix -Wno, -unused-command-line-argument -int-conversion -pedantic) \
 			 -g -fsanitize=address \
 		 	`pkg-config --cflags --libs gtk+-3.0`
 
