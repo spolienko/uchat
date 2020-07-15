@@ -30,7 +30,6 @@ SRC_SERVER = main.c \
 			mx_do_msg.c \
 			mx_do_login.c \
 			mx_chat_send_history.c \
-			mx_drop.c \
              
 SRC_CLIENT = new_main_client.c
 
@@ -106,7 +105,7 @@ clean:
 	@rm -rf uchat_server.log
 	@printf "$(OBJD)\t\t   \033[31;1mdeleted\033[0m\n"
 	@printf "cjson library\t   \033[31;1mdeleted\033[0m\n"
-	@printf "uchat_server.log   \033[31;1mdeleted\033[0m\n"
+	@printf "uchat_server.log\t   \033[31;1mdeleted\033[0m\n"
 
 uninstall: clean
 # 	@make -sC $(LBMXD) uninstall

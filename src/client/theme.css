@@ -16,7 +16,7 @@ button{
     border-width: 2px;
 }
 
-button:hover{
+.black:hover, .white:hover{
     border-color: orange;
     color: orange;
 }
@@ -120,7 +120,8 @@ button:hover{
 }
 
 #E{
-    border-width:0 ;
+    
+    box-shadow: inset 0px 0px rgba(0, 0, 0, 0);
 }
 
 .black_theme:hover, .white_theme:hover{
@@ -129,9 +130,10 @@ button:hover{
 
 .X{
     background: transparent;
+    border-width:0 ;
     border: none;
     padding:0 20px;
-    box-shadow: inset 0px 0px rgba(0, 0, 0, 0), 0 0px white;
+    box-shadow: inset 0px 0px rgba(0, 0, 0, 0);
 }
 
 

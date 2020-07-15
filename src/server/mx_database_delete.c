@@ -1,8 +1,39 @@
 #include "uchat.h"
 
+void mx_chat_delete_session(t_data *data, const char *login) {
+    sqlite3_stmt *stmt = data->stmt;
+    char *str = "DELETE FROM sessions WHERE ROWID=(SELECT MIN(ROWID) FROM"
+                " sessions WHERE login=?)";
+
+    sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, login, strlen(login), SQLITE_STATIC);
+    if(sqlite3_step(stmt) != SQLITE_DONE)
+        puts("Failed to delete session");
+    sqlite3_finalize(stmt);
+}
+
+int result(void *exist, int argc, char **argv, char **reg) {
+    (void)argv;
+    (void)argc;
+    (void)reg;
+    *(int *)exist = 1;
+    return 0;
+}
+
+int check_in_session(t_data *data, char *login) {
+    char cmd[1024];
+    int exist = 0;
+    
+    sprintf(cmd, "SELECT * FROM sessions WHERE login=\"%s\"", login);
+    sqlite3_exec(data->database, cmd, result, &exist, NULL);
+    return exist;
+}
+
 int mx_check_login(t_data *data, char *login, char *pas) {
     char *str = "SELECT login FROM users WHERE login=?";
 
+    if (check_in_session(data, login))
+        return 0;
     sqlite3_prepare_v2(data->database, str, -1, &data->stmt, 0);
     sqlite3_bind_text(data->stmt, 1, login, strlen(login), SQLITE_STATIC);
     if(sqlite3_step(data->stmt) != SQLITE_ROW) {
@@ -54,19 +85,4 @@ void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang) {
         printf("Failed to add user tema\n");
     sqlite3_finalize(stmt);
     add_lang_data(data, login, lang);
-}
-
-void mx_drop_user_sesion(t_data *data, char *buf) {
-    cJSON *str = cJSON_Parse(buf);
-    char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
-    int drop_id = cJSON_GetObjectItemCaseSensitive(str, "drop_id")->valueint;
-    char *str2 = "DELETE FROM sessions WHERE login=?1";
-
-    sqlite3_prepare_v2(data->database, str2, -1, &data->stmt, 0);
-    sqlite3_bind_text(data->stmt, 1, user, strlen(user), SQLITE_STATIC);
-    if(sqlite3_step(data->stmt) != SQLITE_DONE)
-        puts("Failed to delete from session");
-    printf("Client disconected\n");
-    close(drop_id);
-    sqlite3_finalize(data->stmt);
 }

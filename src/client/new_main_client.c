@@ -58,9 +58,15 @@ typedef struct s_ct {
     char *lang;
     char *theme;
     char window_title[100];
+    char *drop_acc;
     int v_n;
-    int delete_id;
+    int d_id;
+    int cant_d_id;
+    int e_id;
+    char *edit_txt;
     int was_connect;
+    int can_delete_msg;
+
 
     GtkWidget *v_window;
     GtkWidget *v_main_grid;
@@ -298,10 +304,14 @@ int init_server(t_s *s, char **argv) {
 
 char *help_str_eng() {
     char *sss = "Rules: max str len 100 chars\n"
-        "Comands write only: |cmd|"
-        "Editing: |123| - font-size, |rol| - color, |inb| - fonts\n"
-        "Stickers: |++++|,\n"
-        "Special cmds: |k[id]|";
+        "Comands write only: |cmd|\n"
+        "Formatin: |12| - font-size, |rol| - color, |ib| - fonts\n"
+        "Stickers: |love|, |beuty|, |++++|, |sadness|, |danger|, |sad_cat|, "
+        "|????|, |hello|, you can write this\n"
+        "If you are admin you can kick users: |k_user|\n"
+        "Change password: |p_new_password|, password can`t be longer 30 chars\n"
+        "Message editing: |e1234567890|new_mess\n"
+        "On click Delete you are drop your account FOREVER!!!\n";
     return sss;
 }
 
@@ -361,8 +371,10 @@ int is_have_editing(char *m) {
 
     if(m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
-            if (m[gg] == '|')
+            if (m[gg] == '|'){
                 i[1] = gg;
+                break;
+            }
             if (m[gg] == '\0')
                 return 0;
         }
@@ -406,17 +418,15 @@ char *mx_get_new_body_e(char *m) {
 
     if(m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
-            if (m[gg] == '|')
+            if (m[gg] == '|'){
                 i[1] = gg;
+                break;
+            } 
         }
     }
     sprintf(sss ,"%s", strndup(m + i[1] + 1, strlen(m) - i[1] - 1));
     return sss;
 }
-
-
-
-
 
 
 
@@ -457,8 +467,10 @@ char *mx_get_user_drop(char *m) {
 
     if(m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
-            if (m[gg] == '|')
+            if (m[gg] == '|'){
                 i[1] = gg;
+                break;
+            }
         }
     }
     sprintf(sss, "%s", strndup(m + 3, i[1] - 3));
@@ -475,23 +487,67 @@ char *drop_creating(char *m, t_s *s) {
     return cJSON_Print(send);
 }
 
+int is_have_change_pass(char *m) {
+    int i[2] = {0, 0};
+
+    if(m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|') {
+                i[1] = gg;
+                break;
+            }
+            if (m[gg] == '\0')
+                return 0;
+        }
+        if (strlen(m) > 4)
+            if(m[1] == 'p' &&  m[2] == '_') {
+                return 1;
+            }
+    }
+    return 0;
+}
+
+char *mx_get_new_pass(char *m) {
+    int i[2] = {0, 0};
+    char *sss = strnew(1000);
+
+    if(m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|'){
+                i[1] = gg;
+                break;
+            }
+        }
+    }
+    sprintf(sss, "%s", strndup(m + 3, i[1] - 3));
+    return sss;
+}
+
+
+char *change_pass_creating(char *m, t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    char *new_pass = mx_get_new_pass(m);
+    if (strlen(new_pass) > 30) {
+        cJSON_AddStringToObject(send, "kind", "new_password");
+        cJSON_AddStringToObject(send, "who_change", s->h->login);
+        cJSON_AddStringToObject(send, "new_pass", new_pass);
+    }
+    return cJSON_Print(send);
+}
+
 char *parsing_mes(char *m, t_s *s) {
     cJSON *send = cJSON_CreateObject();
-    char *res;
-    if (is_have_editing(m)) {
+
+    if (is_have_editing(m))
         return edit_creating(m, s);
-    }
-    else if (is_have_drop(m)) {
+    else if (is_have_drop(m))
         return drop_creating(m, s);
-    }
-    else {
-        
-        cJSON_AddStringToObject(send, "kind", "msg");
-        cJSON_AddStringToObject(send, "login", s->h->login);
-        cJSON_AddStringToObject(send, "msg", m);
-        res = cJSON_Print(send);
-    }
-    return res;
+    else if (is_have_change_pass(m))
+        return change_pass_creating(m, s);
+    cJSON_AddStringToObject(send, "kind", "msg");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    cJSON_AddStringToObject(send, "msg", m);
+    return cJSON_Print(send);
 }
 
 void do_s(GtkWidget *widget, t_s *s) {
@@ -500,23 +556,9 @@ void do_s(GtkWidget *widget, t_s *s) {
         return;
     char *m = malloc(strlen(message) + 1);    
     strcpy(m, trim(message));
-    cJSON *send = cJSON_CreateObject();
     char *res = parsing_mes(m, s);
-
-    printf("%s\n",res);
-
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-
-    // if (strlen(m) < 100 && strlen(m) > 0)
-    // // message_send(m);
-    // printf("%s\n", res);
-    // else {
-    //     printf("to manywords\n");
-    // }
-    if (strlen(m) < 106 && strlen(m) > 0) {
+    printf("%s\n", res);
+    if (strlen(m) < 110 && strlen(m) > 0) {
         tls_write(s->c->tls, res, strlen(res) + 1);
         printf("%s\n", res);
     }
@@ -560,12 +602,17 @@ void init_help(t_inf_row *inf, t_s *s) {
     set_class_for_help(inf);
 }
 
+int show_widget(GtkWidget *widget) {
+    gtk_widget_show_all(widget);
+    return 0;
+}
+
 void inf(GtkWidget *widget, t_s *s) {
     (void)widget;
     t_inf_row *inf = malloc(sizeof(t_inf_row));
 
     init_help(inf, s);
-    gtk_widget_show_all(s->h->v_window);
+    g_idle_add ((int (*)(void *))show_widget, s->h->v_window);
 }
 
 
@@ -578,6 +625,7 @@ void closeApp(GtkWidget *window, t_s *s)
     gtk_main_quit();
 }
 void closeApp2(GtkWidget *window, t_s *s) { 
+    printf("1\n");
     drop_sesion(s);
     closeApp(window, s);
 }
@@ -603,7 +651,7 @@ int check_on_cmd(char *str) {
     char *strr = get_cmd(str);
     if (!strcmp(strr, "|love|"))
         return 1;
-    if (!strcmp(strr, "|aut|"))
+    if (!strcmp(strr, "|beuty|"))
         return 2;
     if (!strcmp(strr, "|++++|"))
         return 3;
@@ -624,7 +672,7 @@ char *what_return(int gg) {
     if (gg == 0)
         return "|love|";
     if (gg == 1)
-        return "|aut|";
+        return "|beuty|";
     if (gg == 2)
         return "|++++|";
     if (gg == 3)
@@ -776,6 +824,7 @@ void sen7(GtkWidget *widget, t_s *s) {
 
 
 typedef struct s_row {
+    int is_sticker;
     GtkWidget *v_row;
     GtkWidget *v_vrow_box;
     GtkWidget *v_hrow;
@@ -819,14 +868,15 @@ typedef struct s_for_click {
 
 void delete (GtkWidget *widget, t_for_click *c) {
     // gtk_container_remove ((GtkContainer *)c->s->h->v_listbox, c->row->v_row);
+    if (c->s->h->can_delete_msg){
     cJSON *send = cJSON_CreateObject();
-
     cJSON_AddStringToObject(send, "kind", "delete");
     cJSON_AddStringToObject(send, "login", c->s->h->login);
     cJSON_AddNumberToObject(send, "id", c->inf->id);
     char *res = cJSON_Print(send);
-    printf("%s\n", res);
+    c->s->h->can_delete_msg = 0;
     tls_write(c->s->c->tls, res, strlen(res) + 1);
+    }
     (void)widget;
 }
 
@@ -837,11 +887,17 @@ void set_class_for_X(t_row *row, t_info *inf, t_s *s){
     (void)s;
 }
 
-void check_deleting(t_for_click *c) {
-    if (c->s->h->delete_id == c->inf->id){
+gboolean check_editing(t_for_click *c) {  
+    if (c->s->h->d_id == c->inf->id){
         gtk_container_remove((GtkContainer *)c->s->h->v_listbox, c->row->v_row);
-        c->s->h->delete_id = -2;
+        c->s->h->d_id = -2;
+        return G_SOURCE_REMOVE;
     }
+    if (c->s->h->e_id == c->inf->id && c->row->is_sticker){
+        gtk_label_set_text((GtkLabel *)c->row->v_body, c->s->h->edit_txt);
+        return G_SOURCE_CONTINUE;
+    }
+    return G_SOURCE_CONTINUE;
 }
 
 void print_X(t_row *row, t_info *inf, t_s *s) {
@@ -858,11 +914,11 @@ void print_X(t_row *row, t_info *inf, t_s *s) {
         g_signal_connect(G_OBJECT(row->v_bt_del), "clicked", G_CALLBACK(delete), c);
     }
     
-    g_timeout_add(50, (GSourceFunc)check_deleting, c);
+    g_timeout_add(1, (GSourceFunc)check_editing, c);
 }
 
 void edit(GtkWidget *widget, t_for_click *c) {
-    char mes[150];
+    char mes[500];
     sprintf(mes, "|e%d|", c->inf->id);
 
     gtk_entry_set_text(GTK_ENTRY(c->s->h->v_main_e), mes);
@@ -874,16 +930,16 @@ void print_E(t_row *row, t_info *inf, t_s *s) {
     c->row = row;
     c->inf = inf;
     c->s = s;
-    if(!strcmp(inf->author, s->h->login)) {
+    if(!strcmp(inf->author, s->h->login) && row->is_sticker) {
         row->v_bt_ed = gtk_button_new_with_label("E");
-        gtk_widget_set_name(row->v_bt_ed, "E");
         gtk_box_pack_start(GTK_BOX(row->v_hrow), 
         row->v_bt_ed, FALSE, FALSE, 0);
-        // set_class_for_X(row, inf, s);
+        row->c_v_bt_ed = gtk_widget_get_style_context(row->v_bt_ed);
+        gtk_style_context_add_class(row->c_v_bt_ed, "X");
         g_signal_connect(G_OBJECT(row->v_bt_ed), "clicked", G_CALLBACK(edit), c);
     }
     
-    g_timeout_add(50, (GSourceFunc)check_deleting, c);
+    // g_timeout_add(50, (GSourceFunc)check_editing, c);
 }
 
 void set_bold_line(t_row *row) {
@@ -1097,18 +1153,23 @@ char *get_new_body(char *str) {
     return new_str;
 }
 
+
+
 void create_row(t_info *inf, t_s *s) {   
     t_row *row = malloc(sizeof(t_row));
+
     init_row(row, inf, s);
     if (check_on_cmd(inf->body)) {
         print_cmd(row, inf);
+        row->is_sticker = 0;
     }
     else if (!check_on_cmd(inf->body)) {
+        row->is_sticker = 1;
         char *new_body = get_new_body(inf->body);
         row->v_body = gtk_label_new(new_body);
     }
     end_initing(row, inf, s);
-    gtk_widget_show_all(s->h->v_window);
+    g_idle_add ((int (*)(void *))show_widget, s->h->v_window);
 }
 
 void create_msg(t_s *s, cJSON *msg) {
@@ -1127,7 +1188,12 @@ void create_msg(t_s *s, cJSON *msg) {
 }
 
 void delete_msg(t_s *s, cJSON *msg) {
-    s->h->delete_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
+    s->h->d_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
+}
+
+void edit_mess(t_s *s, cJSON *msg) {
+    s->h->e_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
+    s->h->edit_txt = cJSON_GetObjectItemCaseSensitive(msg, "msg")->valuestring;
 }
 
 void init_connect_msg(t_s *s, cJSON *msg) {
@@ -1135,6 +1201,25 @@ void init_connect_msg(t_s *s, cJSON *msg) {
     // printf("%d\n", s->h->was_connect);
 }
 
+void drop_acc(GtkWidget *widget, t_s *s) {
+    (void)widget;
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "drop_acc");
+    cJSON_AddStringToObject(send, "login", s->h->login);
+    char *res = cJSON_Print(send);
+
+    tls_write(s->c->tls, res, strlen(res) + 1);
+    closeApp2(s->h->v_window, s);
+
+}
+
+void droping_account(t_s *s, cJSON *msg) {
+    s->h->drop_acc = cJSON_GetObjectItemCaseSensitive(msg, "drop_user")->valuestring;
+
+    if (!strcmp(s->h->drop_acc, s->h->login))
+        drop_acc(NULL, s);
+}
 
 void check_mesage_from_serv(t_s *s, cJSON *msg) {
     char *ch = cJSON_GetObjectItemCaseSensitive(msg, "kind")->valuestring;
@@ -1146,17 +1231,25 @@ void check_mesage_from_serv(t_s *s, cJSON *msg) {
         delete_msg(s, msg);
     if (!strcmp(ch, "connection"))
         init_connect_msg(s, msg);
+    if (!strcmp(ch, "drop_user"))
+        droping_account(s, msg);
+    if (!strcmp(ch, "edit"))
+        edit_mess(s, msg);
 }
 
+void can_deleting_set(t_s *s) {
+    s->h->can_delete_msg = 1;
+}
 
 void watcher_thread(t_s *s) {
+    s->h->can_delete_msg = 1;
+    g_timeout_add(8000, (GSourceFunc)can_deleting_set, s);
     while (true) {
         bzero(s->c->bufs, 1000);
         poll(s->c->pfd, 2, -1);
         if (s->c->pfd[1].revents & POLLIN) {
             if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) 
                 break;
-            // printf("Mesage (%lu): %s\n", s->c->rc, s->c->bufs);
             cJSON *msg = cJSON_Parse(s->c->bufs);
             printf("%s\n", s->c->bufs);
             check_mesage_from_serv(s, msg);
@@ -1501,25 +1594,16 @@ void set_ru(GtkWidget *widget, t_s *s) {
     tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
-void drop_acc(GtkWidget *widget, t_s *s) {
-    (void)widget;
-    cJSON *send = cJSON_CreateObject();
 
-    cJSON_AddStringToObject(send, "kind", "drop_acc");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    char *res = cJSON_Print(send);
-
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    closeApp2(s->h->v_window, s);
-
-}
 
 void init_chatt(t_s *s) {
     mx_1_chat_init(s);
     mx_2_chat_init(s);
     mx_3_chat_init(s);
     mx_4_chat_init(s);
-    s->h->delete_id = -2;
+    s->h->d_id = -2;
+
+
     
     g_signal_connect(G_OBJECT(s->h->v_l_btn_en), "clicked", G_CALLBACK(set_en), s);
     g_signal_connect(G_OBJECT(s->h->v_l_btn_ru), "clicked", G_CALLBACK(set_ru), s);
@@ -1590,6 +1674,10 @@ int mx_check_on_input(GtkWidget *widget, t_s *s) {
     }
     if (!password || !*password) {
         gtk_label_set_text((GtkLabel *)s->l->e_lbl, "Password is empty");
+        return 1;
+    }
+    if (strlen(password) > 30 || strlen(login) > 30) {
+        gtk_label_set_text((GtkLabel *)s->l->e_lbl, "Password or login is tooooo long");
         return 1;
     }
     s->l->login = (char *)login;
@@ -1673,7 +1761,6 @@ void mx_init_logining_1(t_s *s) {
 }
 
 void mx_init_logining_2(t_s *s) {
-    gtk_widget_show_all(s->l->win);
     // gtk_window_set_position(GTK_WINDOW(s->l->win), GTK_WIN_POS_CENTER_ALWAYS); !!!!!
     gtk_entry_set_visibility(GTK_ENTRY(s->l->pass_ety), FALSE);
     gtk_window_set_resizable (GTK_WINDOW(s->l->win), FALSE);
@@ -1682,7 +1769,7 @@ void mx_init_logining_2(t_s *s) {
         GTK_STYLE_PROVIDER(s->l->SP),
         GTK_STYLE_PROVIDER_PRIORITY_USER);
     gtk_window_set_title(GTK_WINDOW(s->l->win), "Uchat");
-    g_signal_connect(G_OBJECT(s->l->win), "destroy", G_CALLBACK(closeApp), s);
+    g_signal_connect(G_OBJECT(s->l->win), "destroy", G_CALLBACK(gtk_main_quit), s);
     s->l->c_window = gtk_widget_get_style_context(s->l->win);
     s->l->c_main_label = gtk_widget_get_style_context(s->l->main_l);
     s->l->c_user_lbl = gtk_widget_get_style_context(s->l->user_lbl);
