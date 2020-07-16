@@ -21,6 +21,9 @@ button{
     color: orange;
 }
 
+.orang{
+    background-color: orange;
+}
 
 .lent{
     border: 2px solid white;
@@ -85,7 +88,6 @@ button{
     background-color: black;
     border: 2px solid white ;
     color: white;
-    
 }
 
 .pading_left_100 {

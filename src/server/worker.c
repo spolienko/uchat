@@ -26,6 +26,10 @@ static int check_kind(char *buf) {
         res = 9;
     else if (mx_strcmp(kind, "new_password") == 0)
         res = 10;
+    else if (mx_strcmp(kind, "clean_chat") == 0)
+        res = 11;
+    else if (mx_strcmp(kind, "privat_mess") == 0)
+        res = 12;
     return res;
 }
 
@@ -139,8 +143,6 @@ void mx_drop_user_sesion(t_data *data, char *buf, t_connection *conn) {
         puts("Failed to delete from session");
     printf("Client disconected\n");
     close(drop_id);
-    // tls_close(conn->connection_array[drop_id]);
-    // tls_free(conn->connection_array[drop_id]);
     sqlite3_finalize(data->stmt);
     (void)conn;
 }
@@ -171,6 +173,35 @@ char *drop_user_from_admin(t_data *data, char *buf) {
     if (data->argc == 4)
         if (!strcmp(admin, data->argv[3]))
             return create_drop_call(drop_user);
+    return NULL;
+}
+
+void delete_from_bd_all_mess (t_data *data) {
+    char *str2 = "DELETE FROM messages where 1=1";
+
+    sqlite3_prepare_v2(data->database, str2, -1, &data->stmt, 0);
+    if(sqlite3_step(data->stmt) != SQLITE_DONE)
+        puts("Failed to delete all mess");
+    sqlite3_finalize(data->stmt);
+}
+
+char *create_delete_all_mess() {
+    cJSON *send = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(send, "kind", "drop_all_mess");
+    return cJSON_Print(send);
+}
+
+char *delete_messages(t_data *data, char *buf) {
+    cJSON *str = cJSON_Parse(buf);
+    char *who_drop = cJSON_GetObjectItemCaseSensitive(str, "who_clean")->valuestring;
+
+    if (data->argc == 4) {
+        if (!strcmp(who_drop, data->argv[3])) {
+            delete_from_bd_all_mess(data);
+            return create_delete_all_mess();
+        }
+    }
     return NULL;
 }
 
@@ -209,7 +240,13 @@ static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connecti
             break;
         case 10:
             change_pass(data, buf);
-            break;  
+            break;
+        case 11:
+            res = delete_messages(data, buf);
+            break;
+        case 12:
+            res = buf;
+            break; 
         default:
             printf("Error reading cJSON from client\n");
         }

@@ -1,142 +1,142 @@
 #include "client.h"
-#include "cJSON.h"
 
 
-
-typedef struct s_clt {
-    struct addrinfo h;
-    struct addrinfo *p_ad;
-    int sock;
-    int err;
-    int enable;
-    struct tls *tls;
-    struct tls_config *cnf;
-    char address_buffer[100];
-    char service_buffer[100];
-    char bufs[1000];
-    char bufc[1000]; 
-    struct pollfd pfd[2];
-    ssize_t rc;
-}              t_clt;
-
-
-typedef struct s_lgn {
-    int login_in;
-    char *login;
-    char **argv;
-    char *pass;
-    char *lang;
-    char *theme;
-    GtkWidget *win;
-    GtkWidget *main_l;
-    GtkWidget *user_lbl;
-    GtkWidget *pass_lbl;
-    GtkWidget *user_ety;
-    GtkWidget *pass_ety;
-    GtkWidget *e_lbl;
-    GtkWidget *ok_btn;
-    GtkWidget *vbox;
-    GtkWidget *m_lbl_b;
-    GtkWidget *u_box;
-    GtkWidget *p_box;
-    GtkWidget *e_box;
-    GtkWidget *ok_btn_b;
-    GtkStyleContext *c_window;
-    GtkStyleContext *c_main_label;
-    GtkStyleContext *c_user_lbl;
-    GtkStyleContext *c_pass_lbl;
-    GtkStyleContext *c_user_ety;
-    GtkStyleContext *c_pass_ety;
-    GtkStyleContext *c_error_label;
-    GtkStyleContext *c_ok_button;
-    GtkCssProvider *SP;
-}              t_lgn;
-
-
-typedef struct s_ct {
-    char *login;
-    char *lang;
-    char *theme;
-    char window_title[100];
-    char *drop_acc;
-    int v_n;
-    int d_id;
-    int cant_d_id;
-    int e_id;
-    char *edit_txt;
-    int was_connect;
-    int can_delete_msg;
-    int is_output_matyki;
-
-    GtkWidget *v_window;
-    GtkWidget *v_main_grid;
-    GtkWidget *v_l_btn_ru;
-    GtkWidget *v_l_btn_en;
-    GtkWidget *v_t_btn_b;
-    GtkWidget *v_t_btn_w;
-    GtkWidget *v_l_btn_rm;
-    GtkWidget *v_scroll;
-    GtkWidget *v_main_e;
-    GtkWidget *v_bt_e;
-    GtkWidget *v_bt_lik;
-    GtkWidget *v_bt_aut;
-    GtkWidget *v_bt_inf;
-    GtkWidget *v_bt_s1;
-    GtkWidget *v_bt_s2;
-    GtkWidget *v_bt_s3;
-    GtkWidget *v_bt_s4;
-    GtkWidget *v_bt_s5;
-    GtkWidget *v_bt_s6;
-    GtkWidget *vbox;
-    GtkWidget *T_b;
-    GtkWidget *scr_box;
-    GtkWidget *ent_box;
-    GtkWidget *btns_b;
-    pthread_t watcher;
-    GtkStyleContext *c_v_window;
-    GtkStyleContext *c_v_main_grid;
-    GtkStyleContext *c_v_l_btn_ru;
-    GtkStyleContext *c_v_l_btn_en;
-    GtkStyleContext *c_v_t_btn_b;
-    GtkStyleContext *c_v_t_btn_w;
-    GtkStyleContext *c_v_l_btn_rm;
-    GtkStyleContext *c_v_scroll;
-    GtkStyleContext *c_v_main_e;
-    GtkStyleContext *c_v_bt_e;
-    GtkStyleContext *c_v_bt_like;
-    GtkStyleContext *c_v_bt_aut;
-    GtkStyleContext *c_v_bt_info;
-    GtkStyleContext *c_v_bt_s1;
-    GtkStyleContext *c_v_bt_s2;
-    GtkStyleContext *c_v_bt_s3;
-    GtkStyleContext *c_v_bt_s4;
-    GtkStyleContext *c_v_bt_s5;
-    GtkStyleContext *c_v_bt_s6;
-    GtkCssProvider *cssProv;
-    GtkWidget *v_listbox;
-    GtkWidget *c_v_listbox;
-}              t_ct;
-
-typedef struct s_s {
-    t_clt *c;//client
-    t_lgn *l;//logining
-    t_ct *h;//chat
-}              t_s;
-
-typedef struct s_inf_row{
-    GtkWidget *v_row;
-    GtkWidget *v_vrow_box;
-    GtkWidget *v_hrow;
-    GtkWidget *v_body;
-    GtkStyleContext *c_v_body;
-}              t_inf_row;
-
-typedef struct s_info {
-    char *author;
-    char *body;
-    char *timebuf;
-    int id;
-}              t_info;
+void mx_set_styles(t_s *s);
+void mx_remove_class_white(t_s *s);
+void mx_remove_class_black(t_s *s);
+int mx_exit_chat(t_s *s);
+void mx_report_1(time_t t, const char *ocsp_url, t_s *s, char *host);
+void mx_report_2(time_t t, t_s *s);
+void mx_report_tls_client(t_s *s, char *host);
+void mx_first_serv_init(t_s *s);
+int mx_second_serv_init(t_s *s, char **argv);
+int mx_third_serv_init(t_s *s);
+int mx_init_server(t_s *s, char **argv);
+char *mx_help_str_eng();
+char *mx_help_str_rus();
+char *mx_help_str(t_s *s);
+int mx_is_digit_for_editing(char *m, int i[2]);
+int mx_is_have_editing(char *m);
+int mx_get_editing_id(char *m);
+char *mx_strneww(int size);
+char *mx_get_new_body_e(char *m);
+char *mx_edit_creating(char *m, t_s *s);
+int mx_is_have_drop(char *m);
+char *mx_get_user_drop(char *m);
+char *mx_drop_creating(char *m, t_s *s);
+int mx_is_have_change_pass(char *m);
+char *mx_get_new_pass(char *m);
+char *mx_change_pass_creating(char *m, t_s *s);
+int mx_is_have_matyki(char *m, t_s *s);
+int mx_is_have_sound(char *m, t_s *s);
+int mx_is_have_visual(char *m, t_s *s);
+int mx_is_have_clean_history(char *m);
+char *mx_clean_history( t_s *s);
+char *mx_parsing_normal_mess(char *m, t_s *s);
+int mx_is_have_privat_message(char *m);
+char *mx_get_user_for_privat(char *m);
+char *mx_create_privat_message(char *m, t_s *s);
+char *mx_parsing_mes(char *m, t_s *s);
+void mx_do_s(GtkWidget *widget, t_s *s);
+void mx_drop_sesion(t_s *s);
+void mx_set_class_for_help(t_inf_row *inf);
+void init_help(t_inf_row *inf, t_s *s);
+int mx_show_widget(GtkWidget *widget);
+void mx_inf(GtkWidget *widget, t_s *s);
+void mx_closeApp(GtkWidget *window, t_s *s);
+void mx_closeApp2(GtkWidget *window, t_s *s);
+char *mx_get_cmd(char *str);
+int mx_check_on_cmd(char *str);
+char *mx_what_return(int gg);
+void mx_sen0(GtkWidget *widget, t_s *s);
+void mx_sen1(GtkWidget *widget, t_s *s);
+void mx_sen2(GtkWidget *widget, t_s *s);
+void mx_sen3(GtkWidget *widget, t_s *s);
+void mx_sen4(GtkWidget *widget, t_s *s);
+void mx_sen5(GtkWidget *widget, t_s *s);
+void mx_sen6(GtkWidget *widget, t_s *s);
+void mx_sen7(GtkWidget *widget, t_s *s);
+void mx_init_row(t_row *row, t_info *inf, t_s *s);
+void mx_delete(GtkWidget *widget, t_for_click *c);
+void mx_set_class_for_X(t_row *row, t_info *inf, t_s *s);
+gboolean mx_check_editing(t_for_click *c);
+void mx_print_X(t_row *row, t_info *inf, t_s *s);
+void mx_edit(GtkWidget *widget, t_for_click *c);
+void mx_print_E(t_row *row, t_info *inf, t_s *s);
+void mx_set_bold_line(t_row *row);
+void mx_set_italic_line(t_row *row);
+void mx_set_red_line(t_row *row);
+void mx_set_lime_line(t_row *row);
+void mx_set_orange_line(t_row *row);
+void mx_set_h1_line(t_row *row);
+void mx_set_h2_line(t_row *row);
+void mx_set_styles_for_mess(t_row *row, char *str, t_info *inf);
+char *mx_parsing_cmd(char *str);
+void mx_set_class_for_elem(t_row *row, t_info *inf);
+void mx_end_initing(t_row *row, t_info *inf, t_s *s);
+void mx_do_print_img(t_row *row, t_info *inf, GdkPixbuf *px);
+void mx_print_img(t_row *row, t_info *inf);
+char *mx_love();
+void mx_print_text(t_row *row, t_info *inf);
+void mx_print_cmd(t_row *row, t_info *inf);
+char *mx_get_new_body_str(char *new_str);
+int mx_is_have_cmd(char *str);
+int mx_arr_size(char **arr);
+char *mx_strncat(char *restrict s1, const char *restrict s2, size_t n);
+char *mx_replace_sub(const char *str, const char *sub,
+                     const char *replace);
+char *mx_get_without_mats(char *new_str);
+char *mx_get_new_body(char *str, t_s *s);
+void mx_create_row(t_info *inf, t_s *s);
+void mx_add_class_orang(t_s *s);
+gboolean mx_set_standart_c (t_s *s);
+void mx_create_msg(t_s *s, cJSON *msg);
+void mx_delete_msg(t_s *s, cJSON *msg);
+void mx_edit_mess(t_s *s, cJSON *msg);
+void mx_init_connect_msg(t_s *s, cJSON *msg);
+void mx_drop_acc(GtkWidget *widget, t_s *s);
+void mx_droping_account(t_s *s, cJSON *msg);
+gboolean mx_set_cant_delete_all_mes(t_s *s);
+void mx_drop_all_messages(t_s *s);
+char *mx_create_privat_message_body(cJSON *msg);
+void mx_create_privat_mes(t_s *s, cJSON *msg);
+void mx_check_mesage_from_serv(t_s *s, cJSON *msg);
+void mx_can_deleting_set(t_s *s);
+void mx_create_eng(t_s *s);
+void mx_create_rus(t_s *s);
+void mx_create_content(t_s *s);
+void mx_1_chat_init(t_s *s);
+void mx_2_chat_init(t_s *s);
+void mx_3_chat_init(t_s *s);
+void mx_remove_class_black(t_s *s);
+void mx_remove_class_white(t_s *s);
+void mx_add_class_white(t_s *s);
+void mx_add_class_black(t_s *s);
+void mx_set_white(t_s *s);
+void mx_set_black(t_s *s);
+void mx_set_standart_style(t_s *s);
+void mx_set_styles(t_s *s);
+void mx_4_chat_init(t_s *s);
+void mx_set_b(GtkWidget *widget, t_s *s);
+void mx_set_w(GtkWidget *widget, t_s *s);
+void mx_set_engl(t_s *s);
+void mx_set_russ(t_s *s);
+void mx_set_en(GtkWidget *widget, t_s *s);
+void mx_set_ru(GtkWidget *widget, t_s *s);
+void mx_5_chat_init(t_s *s);
+void mx_6_chat_init(t_s *s);
+void mx_7_chat_init(t_s *s);
+void mx_send_conection(t_s *s);
+void mx_init_chatt(t_s *s);
+int mx_check_on_input(GtkWidget *widget, t_s *s);
+void mx_work_in_while(t_s *s);
+void mx_init_while_login(t_s *s);
+void mx_do_logining(GtkWidget *widget, t_s *s);
+gboolean mx_check_logining(t_s *s);
+void mx_init_logining_1(t_s *s);
+void mx_init_logining_2(t_s *s);
+void mx_init_logining_3(t_s *s);
+void mx_init_logining_4(t_s *s);
 
 int mx_exit_chat(t_s *s) {
     tls_close(s->c->tls);
@@ -217,7 +217,7 @@ void mx_report_tls_client(t_s *s, char *host) {
 
 
 
-void first_serv_init(t_s *s) {
+void mx_first_serv_init(t_s *s) {
     s->c->enable = 1;
     if (tls_init() < 0) {
         printf("tls_init error\n");
@@ -240,7 +240,7 @@ void first_serv_init(t_s *s) {
     memset(&s->c->h, 0, sizeof(s->c->h));
 }
 
-int second_serv_init(t_s *s, char **argv) {
+int mx_second_serv_init(t_s *s, char **argv) {
     s->c->h.ai_socktype = SOCK_STREAM;
     if ((s->c->err = getaddrinfo(argv[1], argv[2], 
                                  &s->c->h, &s->c->p_ad)) != 0) {
@@ -254,7 +254,7 @@ int second_serv_init(t_s *s, char **argv) {
                 NI_NUMERICHOST);
     printf("%s %s\n", s->c->address_buffer, s->c->service_buffer);
     s->c->sock = socket(s->c->p_ad->ai_family,
-                  s->c->p_ad->ai_socktype, s->c->p_ad->ai_protocol);
+                        s->c->p_ad->ai_socktype, s->c->p_ad->ai_protocol);
     if (s->c->sock == -1) {
         printf("error sock = %s\n", strerror(errno));
         return 1;
@@ -262,7 +262,7 @@ int second_serv_init(t_s *s, char **argv) {
     return 0;
 }
 
-int third_serv_init(t_s *s) {
+int mx_third_serv_init(t_s *s) {
     setsockopt(s->c->sock, IPPROTO_TCP, SO_KEEPALIVE,
                &s->c->enable, sizeof(int));
     if (connect(s->c->sock, s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen)) {
@@ -271,7 +271,6 @@ int third_serv_init(t_s *s) {
     }
     freeaddrinfo(s->c->p_ad);
     printf("connect TCP sock =%d\n", s->c->sock);
-
     if (tls_connect_socket(s->c->tls, s->c->sock, "uchat_server") < 0) {
         printf("tls_connect error\n");
         printf("%s\n", tls_error(s->c->tls));
@@ -281,11 +280,11 @@ int third_serv_init(t_s *s) {
     return 0;
 }
 
-int init_server(t_s *s, char **argv) {
-    first_serv_init(s);
-    if (second_serv_init(s, argv))
+int mx_init_server(t_s *s, char **argv) {
+    mx_first_serv_init(s);
+    if (mx_second_serv_init(s, argv))
         return 1;
-    if (third_serv_init(s))
+    if (mx_third_serv_init(s))
         return 1;
     if (tls_handshake(s->c->tls) < 0) {
         printf("tls_handshake error\n");
@@ -302,104 +301,88 @@ int init_server(t_s *s, char **argv) {
     return 0;
 }
 
-char *help_str_eng() {
+char *mx_help_str_eng() {
     char *sss = "Rules: max str len 100 chars\n"
         "Comands write only: |cmd|\n"
         "Formatin: |12| - font-size, |rol| - color, |ib| - fonts\n"
         "Stickers: |love|, |beuty|, |++++|, |sadness|, |danger|, |sad_cat|, "
         "|????|, |hello|, you can write this\n"
         "If you are admin you can kick users: |k_user|\n"
-        "Change password: |p_new_password|, password can`t be longer 30 chars\n"
+        "Change password: |p_new_pass|, password can`t be longer 30 chars\n"
         "Message editing: |e1234567890|new_mess\n"
-        "On click Delete you are drop your account FOREVER!!!\n"
-        "|m| on anti mat system";
+        "On click Delete you are drop your account\n"
+        "|m| on/off anti mat system\n"
+        "|v| && |s| notification visual/sound off/on\n"
+        "|c| clear history for admin\n"
+        "|x_user| privat message\n";
     return sss;
 }
 
-char *help_str_rus() {
-    char *sss = "Ychi English\n"
-        "Ychi EnglishComands write only: |cmd|\n"
-        "Ychi EnglishEditing: |123| - font-size, |rol| - color, |inb| - fonts\n"
-        "Ychi EnglishStickers: |++++|,\n"
-        "Ychi EnglishSpecial cmds: |k[id]|";
+char *mx_help_str_rus() {
+    char *sss = "Правила: максимум 100 символов \n"
+        "Команды только для записи: | cmd | \n"
+        "Formatin: |12| - размер шрифта, |rol| - цвет, |ib| - шрифты \n"
+        "Наклейки: |love|, |beuty|, |++++|, |sadness|, |danger|, |sad_cat|, "
+        "|????|, |hello|, you can write this\n"
+        "Если вы являетесь администратором, "
+        "вы можете кикнуть пользователей: |k_user| \n"
+        "Изменить пароль: |p_new_pass|, пароль не может быть длиннее"
+        "30 символов \n"
+        "Редактирование сообщения: |е1234567890| new_mess \n"
+        "После нажатия кнопки Удалить вы удаляете свой аккаунт \n"
+        "|m| вкл/выкл анти мат системы \n"
+        "|v| && |s| уведомление визуально/звук выключен/включен \n"
+        "|c| очистить историю для администратора \n"
+        "|x_user| приватное сообщение \n";
     return sss;
 }
 
-char *help_str(t_s *s){
+char *mx_help_str(t_s *s) {
     if (!strcmp(s->h->lang, "eng"))
-        return help_str_eng();
+        return mx_help_str_eng();
     if (!strcmp(s->h->lang, "rus"))
-        return help_str_rus();
-    return help_str_eng();        
-}
-
-bool mx_isspace(char c) {
-    return c == 32 || (c > 8 && c < 14);
-}
-char *mx_strnew_sasha(const int size, char c) {
-    char *ptr = NULL;
-
-    if (size >= 0 && (ptr = (char *)malloc(size + 1))) {
-        for (int i = 0; i < size; ++i)
-            ptr[i] = c;
-        ptr[size] = '\0';
-    }
-    return ptr;
-}
-
-
-char *mx_strtrim(const char *str) {
-    if (str) {
-        int start = 0;
-        int end = mx_strlen(str) - 1;
-        char *new_str = NULL;
-
-        for (; mx_isspace(str[start]); ++start);
-        for (; mx_isspace(str[end]) && end > start; --end);
-        new_str = mx_strnew_sasha(end > start ? end - start + 1 : 0, '\0');
-        mx_strncpy(new_str, str + start, end - start + 1);
-        return new_str;
-    }
-    return NULL;
+        return mx_help_str_rus();
+    return mx_help_str_eng();        
 }
 
 
 int mx_is_digit_for_editing(char *m, int i[2]) {
     char sss[1000];
     sprintf(sss ,"%s\n", strndup(m+2, i[1] - 2));
-    
-    for(unsigned long hh = 0; hh < strlen(sss) - 1; hh++) {
-        if(!mx_isdigit(sss[hh]))
+
+    for (unsigned long hh = 0; hh < strlen(sss) - 1; hh++) {
+        if (!mx_isdigit(sss[hh]))
             return 0;
     }
     return 1;
 }
 
-int is_have_editing(char *m) {
+int mx_is_have_editing(char *m) {
     int i[2] = {0, 0};
 
-    if(m[0] == '|') {
+    if (m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
-            if (m[gg] == '|'){
+            if (m[gg] == '|') {
                 i[1] = gg;
                 break;
             }
             if (m[gg] == '\0')
                 return 0;
         }
-        if(m[1] == 'e') {
+        if (m[1] == 'e') {
             return mx_is_digit_for_editing(m, i);
         }
     }
     return 0;
 }
 
+
 int mx_get_editing_id(char *m) {
     int i[2] = {0, 0};
     char sss[1000];
     int cc;
 
-    if(m[0] == '|') {
+    if (m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
             if (m[gg] == '|')
                 i[1] = gg;
@@ -410,7 +393,7 @@ int mx_get_editing_id(char *m) {
     return cc;
 }
 
-char *strnew(int size) {
+char *mx_strneww(int size) {
 	char	*str;
 
 	if (!(str = (char *)malloc(sizeof(char) * size + 1)))
@@ -423,11 +406,11 @@ char *strnew(int size) {
 
 char *mx_get_new_body_e(char *m) {
     int i[2] = {0, 0};
-    char *sss = strnew(1000);
+    char *sss = mx_strneww(1000);
 
-    if(m[0] == '|') {
+    if (m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
-            if (m[gg] == '|'){
+            if (m[gg] == '|') {
                 i[1] = gg;
                 break;
             } 
@@ -440,7 +423,7 @@ char *mx_get_new_body_e(char *m) {
 
 
 
-char *edit_creating(char *m, t_s *s) {
+char *mx_edit_creating(char *m, t_s *s) {
     cJSON *send = cJSON_CreateObject();
     int id_edit_mess = mx_get_editing_id(m);
     char *new_body = mx_get_new_body_e(m);
@@ -452,10 +435,10 @@ char *edit_creating(char *m, t_s *s) {
     return cJSON_Print(send);
 }
 
-int is_have_drop(char *m) {
+int mx_is_have_drop(char *m) {
     int i[2] = {0, 0};
 
-    if(m[0] == '|') {
+    if (m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
             if (m[gg] == '|')
                 i[1] = gg;
@@ -463,7 +446,7 @@ int is_have_drop(char *m) {
                 return 0;
         }
         if (strlen(m) > 4)
-            if(m[1] == 'k' &&  m[2] == '_') {
+            if (m[1] == 'k' &&  m[2] == '_') {
                 return 1;
             }
     }
@@ -472,11 +455,11 @@ int is_have_drop(char *m) {
 
 char *mx_get_user_drop(char *m) {
     int i[2] = {0, 0};
-    char *sss = strnew(1000);
+    char *sss = mx_strneww(1000);
 
-    if(m[0] == '|') {
+    if (m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
-            if (m[gg] == '|'){
+            if (m[gg] == '|') {
                 i[1] = gg;
                 break;
             }
@@ -486,7 +469,7 @@ char *mx_get_user_drop(char *m) {
     return sss;
 }
 
-char *drop_creating(char *m, t_s *s) {
+char *mx_drop_creating(char *m, t_s *s) {
     cJSON *send = cJSON_CreateObject();
     char *user_drop = mx_get_user_drop(m);
     
@@ -496,10 +479,10 @@ char *drop_creating(char *m, t_s *s) {
     return cJSON_Print(send);
 }
 
-int is_have_change_pass(char *m) {
+int mx_is_have_change_pass(char *m) {
     int i[2] = {0, 0};
 
-    if(m[0] == '|') {
+    if (m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
             if (m[gg] == '|') {
                 i[1] = gg;
@@ -509,7 +492,7 @@ int is_have_change_pass(char *m) {
                 return 0;
         }
         if (strlen(m) > 4)
-            if(m[1] == 'p' &&  m[2] == '_') {
+            if (m[1] == 'p' &&  m[2] == '_') {
                 return 1;
             }
     }
@@ -518,11 +501,11 @@ int is_have_change_pass(char *m) {
 
 char *mx_get_new_pass(char *m) {
     int i[2] = {0, 0};
-    char *sss = strnew(1000);
+    char *sss = mx_strneww(1000);
 
-    if(m[0] == '|') {
+    if (m[0] == '|') {
         for (unsigned long gg = 1; gg < strlen(m); gg++) {
-            if (m[gg] == '|'){
+            if (m[gg] == '|') {
                 i[1] = gg;
                 break;
             }
@@ -533,7 +516,8 @@ char *mx_get_new_pass(char *m) {
 }
 
 
-char *change_pass_creating(char *m, t_s *s) {
+
+char *mx_change_pass_creating(char *m, t_s *s) {
     cJSON *send = cJSON_CreateObject();
     char *new_pass = mx_get_new_pass(m);
     if (strlen(new_pass) > 30) {
@@ -544,9 +528,9 @@ char *change_pass_creating(char *m, t_s *s) {
     return cJSON_Print(send);
 }
 
-int is_have_matyki(char *m, t_s *s) {
-    if(strlen(m) == 3) {
-        if(m[0] == '|' && m[1] == 'm' && m[2] == '|') {
+int mx_is_have_matyki(char *m, t_s *s) {
+    if (strlen(m) == 3) {
+        if (m[0] == '|' && m[1] == 'm' && m[2] == '|') {
             if (s->h->is_output_matyki)
                 s->h->is_output_matyki = 0;
             else 
@@ -558,44 +542,158 @@ int is_have_matyki(char *m, t_s *s) {
     return 0;
 }
 
-char *parsing_mes(char *m, t_s *s) {
+int mx_is_have_sound(char *m, t_s *s) {
+    if (strlen(m) == 3) {
+        if (m[0] == '|' && m[1] == 's' && m[2] == '|') {
+            if (s->h->is_output_sound)
+                s->h->is_output_sound = 0;
+            else 
+                s->h->is_output_sound = 1;
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+int mx_is_have_visual(char *m, t_s *s) {
+    if (strlen(m) == 3) {
+        if (m[0] == '|' && m[1] == 'v' && m[2] == '|') {
+            if (s->h->is_output_visual)
+                s->h->is_output_visual = 0;
+            else 
+                s->h->is_output_visual = 1;
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+
+int mx_is_have_clean_history(char *m) {
+    if (strlen(m) == 3) {
+        if (m[0] == '|' && m[1] == 'c' && m[2] == '|') {
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+char *mx_clean_history( t_s *s) {
     cJSON *send = cJSON_CreateObject();
 
-    if (is_have_editing(m))
-        return edit_creating(m, s);
-    else if (is_have_drop(m))
-        return drop_creating(m, s);
-    else if (is_have_change_pass(m))
-        return change_pass_creating(m, s);
-    else if (is_have_matyki(m, s))
-        return NULL;
+    cJSON_AddStringToObject(send, "kind", "clean_chat");
+    cJSON_AddStringToObject(send, "who_clean", s->h->login);
+    return cJSON_Print(send);
+}
+
+char *mx_parsing_normal_mess(char *m, t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+
     cJSON_AddStringToObject(send, "kind", "msg");
     cJSON_AddStringToObject(send, "login", s->h->login);
     cJSON_AddStringToObject(send, "msg", m);
     return cJSON_Print(send);
 }
 
-void do_s(GtkWidget *widget, t_s *s) {
-    char *message = mx_strtrim((char *)gtk_entry_get_text(GTK_ENTRY(s->h->v_main_e)));
- 
-    if(!message || !*message )
-        return;
 
-    if (strlen(message) < 110 && strlen(message) > 0) {
-        char *res = parsing_mes(message, s);
-        if(res != NULL)
-            tls_write(s->c->tls, res, strlen(res) + 1);
-            printf("%s\n", res);
-    }
-    else {
-        printf("to manywords\n");
-    }
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+int mx_is_have_privat_message(char *m) {
+    int i[2] = {0, 0};
 
+    if (m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|')
+                i[1] = gg;
+            if (m[gg] == '\0')
+                return 0;
+        }
+        if (strlen(m) > 4)
+            if (m[1] == 'x' &&  m[2] == '_') {
+                return 1;
+            }
+    }
+    return 0;
+}
+
+char *mx_get_user_for_privat(char *m) {
+    int i[2] = {0, 0};
+    char *sss = mx_strneww(1000);
+
+    if (m[0] == '|') {
+        for (unsigned long gg = 1; gg < strlen(m); gg++) {
+            if (m[gg] == '|') {
+                i[1] = gg;
+                break;
+            }
+        }
+    }
+    sprintf(sss, "%s", strndup(m + 3, i[1] - 3));
+    return sss;
+}
+
+
+
+
+
+
+char *mx_create_privat_message(char *m, t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    char *user_for_privat = mx_get_user_for_privat(m);
+    char *msg = mx_get_new_body_e(m);
+    
+    cJSON_AddStringToObject(send, "kind", "privat_mess");
+    cJSON_AddStringToObject(send, "who_send", s->h->login);
+    cJSON_AddStringToObject(send, "to_user", user_for_privat);
+    cJSON_AddStringToObject(send, "msg", msg);
+    return cJSON_Print(send);
+}
+
+char *mx_parsing_mes(char *m, t_s *s) {
+    if (mx_is_have_editing(m))
+        return mx_edit_creating(m, s);
+    else if (mx_is_have_drop(m))
+        return mx_drop_creating(m, s);
+    else if (mx_is_have_change_pass(m))
+        return mx_change_pass_creating(m, s);
+    else if (mx_is_have_matyki(m, s))
+        return NULL;
+    else if (mx_is_have_sound(m, s))
+        return NULL;
+    else if (mx_is_have_visual(m, s))
+        return NULL;
+    else if (mx_is_have_visual(m, s))
+        return NULL;
+    else if (mx_is_have_clean_history(m))
+        return mx_clean_history(s);
+    else if (mx_is_have_privat_message(m))
+        return mx_create_privat_message(m, s);
+    return mx_parsing_normal_mess(m, s);
+}
+
+
+
+void mx_do_s(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = (char *)gtk_entry_get_text(GTK_ENTRY(s->h->v_main_e));
+    
+        if (!message || !*message )
+            return;
+        if (strlen(message) < 110 && strlen(message) > 0) {
+            char *res = mx_parsing_mes(message, s);
+            if (res != NULL)
+                tls_write(s->c->tls, res, strlen(res) + 1);
+        }
+        else
+            printf("\n");
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
     (void)widget;
 }
 
-void drop_sesion(t_s *s) {
+void mx_drop_sesion(t_s *s) {
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -606,13 +704,13 @@ void drop_sesion(t_s *s) {
     tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
-void set_class_for_help(t_inf_row *inf) {
+void mx_set_class_for_help(t_inf_row *inf) {
     inf->c_v_body = gtk_widget_get_style_context(inf->v_body);
     gtk_style_context_add_class(inf->c_v_body, "pading_left_100");
 }
 
 void init_help(t_inf_row *inf, t_s *s) {
-    char *str = help_str(s);
+    char *str = mx_help_str(s);
 
     inf->v_row = gtk_list_box_row_new();
     gtk_list_box_insert((GtkListBox *)s->h->v_listbox, inf->v_row, s->h->v_n);
@@ -623,38 +721,38 @@ void init_help(t_inf_row *inf, t_s *s) {
     gtk_box_pack_start(GTK_BOX(inf->v_hrow), inf->v_body, FALSE, FALSE, 0);
     gtk_widget_set_size_request(inf->v_body, 250, 10);
     gtk_label_set_xalign((GtkLabel *)inf->v_body, 0.1);
-    set_class_for_help(inf);
+    mx_set_class_for_help(inf);
 }
 
-int show_widget(GtkWidget *widget) {
+int mx_show_widget(GtkWidget *widget) {
     gtk_widget_show_all(widget);
     return 0;
 }
 
-void inf(GtkWidget *widget, t_s *s) {
+void mx_inf(GtkWidget *widget, t_s *s) {
     (void)widget;
     t_inf_row *inf = malloc(sizeof(t_inf_row));
 
     init_help(inf, s);
-    g_idle_add ((int (*)(void *))show_widget, s->h->v_window);
+    g_idle_add ((int (*)(void *))mx_show_widget, s->h->v_window);
 }
 
 
 
-void closeApp(GtkWidget *window, t_s *s)
-{   
+void mx_closeApp(GtkWidget *window, t_s *s) {   
     (void)window;
     mx_exit_chat(s);
     printf("Destroy\n");
     gtk_main_quit();
 }
-void closeApp2(GtkWidget *window, t_s *s) { 
-    drop_sesion(s);
-    closeApp(window, s);
+
+void mx_closeApp2(GtkWidget *window, t_s *s) { 
+    mx_drop_sesion(s);
+    mx_closeApp(window, s);
 }
 
 
-char *get_cmd(char *str) {
+char *mx_get_cmd(char *str) {
     int arr[300];
     int arrr[2] = {0, 0};
 
@@ -670,8 +768,8 @@ char *get_cmd(char *str) {
     return strndup(str + arr[0], arr[1] + 1);
 }
 
-int check_on_cmd(char *str) {
-    char *strr = get_cmd(str);
+int mx_check_on_cmd(char *str) {
+    char *strr = mx_get_cmd(str);
     if (!strcmp(strr, "|love|"))
         return 1;
     if (!strcmp(strr, "|beuty|"))
@@ -691,7 +789,12 @@ int check_on_cmd(char *str) {
     return 0;
 }
 
-char *what_return(int gg) {
+
+
+
+
+
+char *mx_what_return(int gg) {
     if (gg == 0)
         return "|love|";
     if (gg == 1)
@@ -711,160 +814,167 @@ char *what_return(int gg) {
     return "err";
 } 
 
-void sen0(GtkWidget *widget, t_s *s) {
-    char *message = what_return(0);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
+void mx_sen0(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(0);
+        char *m = malloc(strlen(message) + 1);
 
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
+
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
     (void)widget;
 }
 
-void sen1(GtkWidget *widget, t_s *s) {
-    char *message = what_return(1);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
+void mx_sen1(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(1);
+        char *m = malloc(strlen(message) + 1);
 
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
+
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
     (void)widget;
 }
 
-void sen2(GtkWidget *widget, t_s *s) {
-    char *message = what_return(2);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
+void mx_sen2(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(2);
+        char *m = malloc(strlen(message) + 1);
 
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
+
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
     (void)widget;
 }
 
-void sen3(GtkWidget *widget, t_s *s) {
-    char *message = what_return(3);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
+void mx_sen3(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(3);
+        char *m = malloc(strlen(message) + 1);    
 
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
-    (void)widget;
-}
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
 
-
-void sen4(GtkWidget *widget, t_s *s) {
-    char *message = what_return(4);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
-
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
-    (void)widget;
-}
-void sen5(GtkWidget *widget, t_s *s) {
-    char *message = what_return(5);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
-
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
-    (void)widget;
-}
-void sen6(GtkWidget *widget, t_s *s) {
-    char *message = what_return(6);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
-
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
-    (void)widget;
-}
-void sen7(GtkWidget *widget, t_s *s) {
-    char *message = what_return(7);
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, mx_strtrim(message));
-    cJSON *send = cJSON_CreateObject();
-    char *res;
-
-    cJSON_AddStringToObject(send, "kind", "msg");
-    cJSON_AddStringToObject(send, "login", s->h->login);
-    cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-    printf("%s\n", res);
-    tls_write(s->c->tls, res, strlen(res) + 1);
-    gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
     (void)widget;
 }
 
 
-typedef struct s_row {
-    int is_sticker;
-    GtkWidget *v_row;
-    GtkWidget *v_vrow_box;
-    GtkWidget *v_hrow;
-    GtkWidget *v_taa_box;
-    GtkWidget *v_author;
-    GtkWidget *v_time;
-    GtkWidget *v_body;
-    GtkWidget *v_bt_del;
-    GtkWidget *v_bt_ed;
-    GtkStyleContext *c_v_author;
-    GtkStyleContext *c_v_time;
-    GtkStyleContext *c_v_body;
-    GtkStyleContext *c_v_bt_del;
-    GtkStyleContext *c_v_bt_ed;
-}              t_row;
+void mx_sen4(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(4);
+        char *m = malloc(strlen(message) + 1);    
 
-void init_row(t_row *row, t_info *inf, t_s *s) {
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
+
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
+    (void)widget;
+}
+void mx_sen5(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(5);
+        char *m = malloc(strlen(message) + 1);    
+
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
+
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
+    (void)widget;
+}
+void mx_sen6(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(6);
+        char *m = malloc(strlen(message) + 1);  
+
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
+
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
+    (void)widget;
+}
+void mx_sen7(GtkWidget *widget, t_s *s) {
+    if (s->h->can_do_msg) {
+        s->h->can_do_msg = 0;
+        char *message = mx_what_return(7);
+        char *m = malloc(strlen(message) + 1);   
+
+        strcpy(m, message);
+        cJSON *send = cJSON_CreateObject();
+        char *res;
+
+        cJSON_AddStringToObject(send, "kind", "msg");
+        cJSON_AddStringToObject(send, "login", s->h->login);
+        cJSON_AddStringToObject(send, "msg", m);
+        res = cJSON_Print(send);
+        tls_write(s->c->tls, res, strlen(res) + 1);
+        gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
+    }
+    (void)widget;
+}
+
+
+
+void mx_init_row(t_row *row, t_info *inf, t_s *s) {
     row->v_row = gtk_list_box_row_new();
     gtk_list_box_insert((GtkListBox *)s->h->v_listbox, row->v_row, s->h->v_n);
     s->h->v_n++;
@@ -882,65 +992,60 @@ void init_row(t_row *row, t_info *inf, t_s *s) {
     gtk_container_add(GTK_CONTAINER(row->v_hrow), row->v_taa_box);
 }
 
-//X
-typedef struct s_for_click {
-    t_row *row;
-    t_info *inf;
-    t_s *s;
-}              t_for_click;
 
-void delete (GtkWidget *widget, t_for_click *c) {
-    // gtk_container_remove ((GtkContainer *)c->s->h->v_listbox, c->row->v_row);
-    if (c->s->h->can_delete_msg){
-    cJSON *send = cJSON_CreateObject();
-    cJSON_AddStringToObject(send, "kind", "delete");
-    cJSON_AddStringToObject(send, "login", c->s->h->login);
-    cJSON_AddNumberToObject(send, "id", c->inf->id);
-    char *res = cJSON_Print(send);
-    c->s->h->can_delete_msg = 0;
-    tls_write(c->s->c->tls, res, strlen(res) + 1);
+void mx_delete(GtkWidget *widget, t_for_click *c) {
+    if (c->s->h->can_do_msg) {
+        cJSON *send = cJSON_CreateObject();
+        cJSON_AddStringToObject(send, "kind", "delete");
+        cJSON_AddStringToObject(send, "login", c->s->h->login);
+        cJSON_AddNumberToObject(send, "id", c->inf->id);
+        char *res = cJSON_Print(send);
+        c->s->h->can_do_msg = 0;
+        tls_write(c->s->c->tls, res, strlen(res) + 1);
     }
     (void)widget;
 }
 
-void set_class_for_X(t_row *row, t_info *inf, t_s *s){
+void mx_set_class_for_X(t_row *row, t_info *inf, t_s *s) {
     row->c_v_bt_del = gtk_widget_get_style_context(row->v_bt_del);
     gtk_style_context_add_class(row->c_v_bt_del, "X");
     (void)inf;
     (void)s;
 }
 
-gboolean check_editing(t_for_click *c) {  
-    if (c->s->h->d_id == c->inf->id){
-        gtk_container_remove((GtkContainer *)c->s->h->v_listbox, c->row->v_row);
+gboolean mx_check_editing(t_for_click *c) {  
+    if (c->s->h->d_id == c->inf->id || c->s->h->is_drop_all_messages) {
+        gtk_container_remove((GtkContainer *)c->s->h->v_listbox,
+            c->row->v_row);
         c->s->h->d_id = -2;
         return G_SOURCE_REMOVE;
     }
-    if (c->s->h->e_id == c->inf->id && c->row->is_sticker){
+    if (c->s->h->e_id == c->inf->id && c->row->is_sticker) {
         gtk_label_set_text((GtkLabel *)c->row->v_body, c->s->h->edit_txt);
         return G_SOURCE_CONTINUE;
     }
     return G_SOURCE_CONTINUE;
 }
 
-void print_X(t_row *row, t_info *inf, t_s *s) {
+void mx_print_X(t_row *row, t_info *inf, t_s *s) {
     t_for_click *c = malloc(sizeof(t_for_click));
+
     c->row = row;
     c->inf = inf;
     c->s = s;
-    if(!strcmp(inf->author, s->h->login)) {
+    if (!strcmp(inf->author, s->h->login)) {
         row->v_bt_del = gtk_button_new_with_label("X");
         gtk_widget_set_name(row->v_bt_del, "X");
         gtk_box_pack_start(GTK_BOX(row->v_hrow), 
         row->v_bt_del, FALSE, FALSE, 0);
-        set_class_for_X(row, inf, s);
-        g_signal_connect(G_OBJECT(row->v_bt_del), "clicked", G_CALLBACK(delete), c);
-    }
-    
-    g_timeout_add(10, (GSourceFunc)check_editing, c);
+        mx_set_class_for_X(row, inf, s);
+        g_signal_connect(G_OBJECT(row->v_bt_del), "clicked",
+            G_CALLBACK(mx_delete), c);
+    }   
+    g_timeout_add(10, (GSourceFunc)mx_check_editing, c);
 }
 
-void edit(GtkWidget *widget, t_for_click *c) {
+void mx_edit(GtkWidget *widget, t_for_click *c) {
     char mes[500];
     sprintf(mes, "|e%d|", c->inf->id);
 
@@ -948,98 +1053,101 @@ void edit(GtkWidget *widget, t_for_click *c) {
     (void)widget;
 }
 
-void print_E(t_row *row, t_info *inf, t_s *s) {
+void mx_print_E(t_row *row, t_info *inf, t_s *s) {
     t_for_click *c = malloc(sizeof(t_for_click));
+
     c->row = row;
     c->inf = inf;
     c->s = s;
-    if(!strcmp(inf->author, s->h->login) && row->is_sticker) {
+    if (!strcmp(inf->author, s->h->login) && row->is_sticker) {
         row->v_bt_ed = gtk_button_new_with_label("E");
         gtk_box_pack_start(GTK_BOX(row->v_hrow), 
         row->v_bt_ed, FALSE, FALSE, 0);
         row->c_v_bt_ed = gtk_widget_get_style_context(row->v_bt_ed);
         gtk_style_context_add_class(row->c_v_bt_ed, "X");
-        g_signal_connect(G_OBJECT(row->v_bt_ed), "clicked", G_CALLBACK(edit), c);
+        g_signal_connect(G_OBJECT(row->v_bt_ed), "clicked",
+                         G_CALLBACK(mx_edit), c);
     }
 }
 
-void set_bold_line(t_row *row) {
+void mx_set_bold_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "bold");
     gtk_style_context_add_class (row->c_v_time, "bold");
     gtk_style_context_add_class (row->c_v_body, "bold");
 }
 
-void set_italic_line(t_row *row) {
+void mx_set_italic_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "italic");
     gtk_style_context_add_class (row->c_v_time, "italic");
     gtk_style_context_add_class (row->c_v_body, "italic");
 }
 
 
-void set_red_line(t_row *row) {
+void mx_set_red_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "red");
     gtk_style_context_add_class (row->c_v_time, "red");
     gtk_style_context_add_class (row->c_v_body, "red");   
 }
 
-void set_lime_line(t_row *row) {
+void mx_set_lime_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "lime");
     gtk_style_context_add_class (row->c_v_time, "lime");
     gtk_style_context_add_class (row->c_v_body, "lime"); 
 }
 
-void set_orange_line(t_row *row) {
+void mx_set_orange_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "orange");
     gtk_style_context_add_class (row->c_v_time, "orange");
     gtk_style_context_add_class (row->c_v_body, "orange"); 
 }
 
-void set_h1_line(t_row *row) {
+void mx_set_h1_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "h1");
     gtk_style_context_add_class (row->c_v_time, "h1");
     gtk_style_context_add_class (row->c_v_body, "h1");
 }
 
-void set_h2_line(t_row *row) {
+void mx_set_h2_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "h2");
     gtk_style_context_add_class (row->c_v_time, "h2");
     gtk_style_context_add_class (row->c_v_body, "h2");
 }
 
-void set_styles_for_mess(t_row *row, char *str, t_info *inf) {
-    if (!check_on_cmd(inf->body) && inf->body[0] == '|') {
+void mx_set_styles_for_mess(t_row *row, char *str, t_info *inf) {
+    if (!mx_check_on_cmd(inf->body) && inf->body[0] == '|') {
         if (str[0] == 'b')
-            set_bold_line(row);
+            mx_set_bold_line(row);
         if (str[0] == 'i')
-            set_italic_line(row);
+            mx_set_italic_line(row);
         if (str[1] == 'r')
-            set_red_line(row);
+            mx_set_red_line(row);
         if (str[1] == 'l')
-            set_lime_line(row);
+            mx_set_lime_line(row);
         if (str[1] == 'o')
-            set_orange_line(row);
+            mx_set_orange_line(row);
         if (str[2] == '1')
-            set_h1_line(row);
+            mx_set_h1_line(row);
         if (str[2] == '2')
-            set_h2_line(row);
+            mx_set_h2_line(row);
     }
 }
 
 
 
-char *parsing_cmd(char *str) {
-    char *strr = get_cmd(str);
-    char *strrr = strnew(3);
+
+char *mx_parsing_cmd(char *str) {
+    char *strr = mx_get_cmd(str);
+    char *strrr = mx_strneww(3);
     int cn = 0;
 
     while(strr[cn] != '\0') {
-        if(strr[cn] == 'b' || strr[cn] == 'i' ) {
+        if (strr[cn] == 'b' || strr[cn] == 'i' ) {
             strrr[0] = strr[cn];
         }
         if (strr[cn] == 'r' || strr[cn] == 'l' || strr[cn] == 'o') {
            strrr[1] = strr[cn];
         }
-        if(strr[cn] == '1' || strr[cn] == '2' ) {
+        if (strr[cn] == '1' || strr[cn] == '2' ) {
             strrr[2] = strr[cn];
         }
         cn++;
@@ -1047,58 +1155,59 @@ char *parsing_cmd(char *str) {
     return strrr;
 }
 
-void set_class_for_elem(t_row *row, t_info *inf) {
+void mx_set_class_for_elem(t_row *row, t_info *inf) {
     row->c_v_author = gtk_widget_get_style_context(row->v_author);
     row->c_v_time = gtk_widget_get_style_context(row->v_time);
     row->c_v_body = gtk_widget_get_style_context(row->v_body);
-    char *str = parsing_cmd(inf->body);
+    char *str = mx_parsing_cmd(inf->body);
     
-    set_styles_for_mess(row, str, inf);
+    mx_set_styles_for_mess(row, str, inf);
 }
 
-void end_initing(t_row *row, t_info *inf, t_s *s) {
-    (void)inf,(void) s;
+void mx_end_initing(t_row *row, t_info *inf, t_s *s) {
     gtk_box_pack_start(GTK_BOX(row->v_hrow), row->v_body, FALSE, FALSE, 0);
     gtk_widget_set_size_request(row->v_body,100,30);    
     gtk_widget_set_size_request(row->v_body,80,30);
-    print_X(row, inf, s);
-    print_E(row, inf, s);
-    set_class_for_elem(row, inf);
+    mx_print_X(row, inf, s);
+    mx_print_E(row, inf, s);
+    mx_set_class_for_elem(row, inf);
+    (void)inf;
+    (void)s;
 }
 
-void do_print_img(t_row *row, t_info *inf, GdkPixbuf *pixbuf){
-    if (check_on_cmd(inf->body) == 7)
-        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/?.png",
+void mx_do_print_img(t_row *row, t_info *inf, GdkPixbuf *px) {
+    if (mx_check_on_cmd(inf->body) == 7)
+        px = gdk_pixbuf_new_from_file_at_scale ("src/client/img/?.png",
             340, 340, TRUE, NULL);
-    if (check_on_cmd(inf->body) == 8)
-        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/hello.png",
+    if (mx_check_on_cmd(inf->body) == 8)
+        px = gdk_pixbuf_new_from_file_at_scale ("src/client/img/hello.png",
             340, 340, TRUE, NULL);
-    if (check_on_cmd(inf->body) == 2)
-        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/aut.jpg",
+    if (mx_check_on_cmd(inf->body) == 2)
+        px = gdk_pixbuf_new_from_file_at_scale ("src/client/img/aut.jpg",
             250, 250, TRUE, NULL);
-    row->v_body = gtk_image_new_from_pixbuf(pixbuf);
+    row->v_body = gtk_image_new_from_pixbuf(px);
 }
 
-void print_img(t_row *row, t_info *inf) {
-    GdkPixbuf *pixbuf;
+void mx_print_img(t_row *row, t_info *inf) {
+    GdkPixbuf *px;
 
-    if (check_on_cmd(inf->body) == 3)
-        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/+.png", 
+    if (mx_check_on_cmd(inf->body) == 3)
+        px = gdk_pixbuf_new_from_file_at_scale ("src/client/img/+.png",
             340, 340, TRUE, NULL);
-    if (check_on_cmd(inf->body) == 4)
-        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/sadness.png", 
+    if (mx_check_on_cmd(inf->body) == 4)
+        px = gdk_pixbuf_new_from_file_at_scale ("src/client/img/sadness.png",
             340, 340, TRUE, NULL);
-    if (check_on_cmd(inf->body) == 5)
-        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/danger.png",
+    if (mx_check_on_cmd(inf->body) == 5)
+        px = gdk_pixbuf_new_from_file_at_scale ("src/client/img/danger.png",
             270, 270, TRUE, NULL);
-    if (check_on_cmd(inf->body) == 6)
-        pixbuf = gdk_pixbuf_new_from_file_at_scale ("src/client/img/sad_cat.png",
+    if (mx_check_on_cmd(inf->body) == 6)
+        px = gdk_pixbuf_new_from_file_at_scale ("src/client/img/sad_cat.png",
             390, 390, TRUE, NULL);
-    do_print_img(row, inf, pixbuf);
+    mx_do_print_img(row, inf, px);
 }
 
 
-char *love(){
+char *mx_love() {
     char *message = "___$$$$$$$$______$$$$$$$$$\n"
         "_$$$$$$$$$$$$__$$$$$$$__$$$$\n"
         "$$$$$$$$$$$$$$$$$$$$$$$$__$$$\n"
@@ -1115,33 +1224,33 @@ char *love(){
     return message;
 }
 
-void print_text(t_row *row, t_info *inf) {
-    if (check_on_cmd(inf->body) == 1)
-        row->v_body = gtk_label_new(love());
+void mx_print_text(t_row *row, t_info *inf) {
+    if (mx_check_on_cmd(inf->body) == 1)
+        row->v_body = gtk_label_new(mx_love());
 }
 
-void print_cmd(t_row *row, t_info *inf) {
-    if (check_on_cmd(inf->body) > 1)
-        print_img(row, inf);
-    if (check_on_cmd(inf->body) == 1)
-        print_text(row, inf);
+void mx_print_cmd(t_row *row, t_info *inf) {
+    if (mx_check_on_cmd(inf->body) > 1)
+        mx_print_img(row, inf);
+    if (mx_check_on_cmd(inf->body) == 1)
+        mx_print_text(row, inf);
 }
 
-char *get_new_body_str(char *new_str) {
+char *mx_get_new_body_str(char *new_str) {
     int arr[2] = {0, 0};
 
-    if(new_str[1] == '|')
+    if (new_str[1] == '|')
         arr[1] = 1;
-    else if(new_str[2] == '|')
+    else if (new_str[2] == '|')
         arr[1] = 2;
-    else if(new_str[3] == '|')
+    else if (new_str[3] == '|')
         arr[1] = 3;
-    else if(new_str[4] == '|')
+    else if (new_str[4] == '|')
         arr[1] = 4;
     return new_str + arr[1] + 1;
 }
 
-int is_have_cmd(char *str) {
+int mx_is_have_cmd(char *str) {
     if (str[0] == '|' && (str[2] == '|' || str[3] == '|' 
         || str[4] == '|' || str[1] == '|'))
         return 1;
@@ -1166,8 +1275,11 @@ char *mx_strncat(char *restrict s1, const char *restrict s2, size_t n) {
     return save;
 }
 
+
+
+
 char *mx_replace_sub(const char *str, const char *sub,
-                        const char *replace) {
+                     const char *replace) {
     int subs = mx_count_substr(str, sub);
     int subs_length = mx_strlen(sub) * subs;
     int replace_length = mx_strlen(replace) * subs;
@@ -1187,7 +1299,7 @@ char *mx_replace_sub(const char *str, const char *sub,
     return result;
 }
 
-char *get_without_mats(char *new_str) {
+char *mx_get_without_mats(char *new_str) {
     char *arr_eng_mats[1024] = {"fuck", "dick", "suck", "shut", "cocks", 
         "condom", "fart", "pussy", "ass", "bitch", "shit"};
     char *arr_rus_mats[1024] = {"хуй", "гавно", "лох", "сука", "пососи",
@@ -1204,38 +1316,65 @@ char *get_without_mats(char *new_str) {
     return new_str;
 }
 
-char *get_new_body(char *str, t_s *s) {
+char *mx_get_new_body(char *str, t_s *s) {
     char *new_str = strdup(str);
 
-    if (is_have_cmd(new_str)) {
-        new_str = get_new_body_str(new_str);
+    if (mx_is_have_cmd(new_str)) {
+        new_str = mx_get_new_body_str(new_str);
     }
     if (s->h->is_output_matyki) {
-        new_str = get_without_mats(new_str);
+        new_str = mx_get_without_mats(new_str);
     }
     return new_str;
 }
 
 
 
-void create_row(t_info *inf, t_s *s) {   
+void mx_create_row(t_info *inf, t_s *s) {   
     t_row *row = malloc(sizeof(t_row));
 
-    init_row(row, inf, s);
-    if (check_on_cmd(inf->body)) {
-        print_cmd(row, inf);
+    mx_init_row(row, inf, s);
+    if (mx_check_on_cmd(inf->body)) {
+        mx_print_cmd(row, inf);
         row->is_sticker = 0;
     }
-    else if (!check_on_cmd(inf->body)) {
+    else if (!mx_check_on_cmd(inf->body)) {
         row->is_sticker = 1;
-        char *new_body = get_new_body(inf->body, s);
+        char *new_body = mx_get_new_body(inf->body, s);
         row->v_body = gtk_label_new(new_body);
     }
-    end_initing(row, inf, s);
-    g_idle_add ((int (*)(void *))show_widget, s->h->v_window);
+    mx_end_initing(row, inf, s);
+    g_idle_add ((int (*)(void *))mx_show_widget, s->h->v_window);
 }
 
-void create_msg(t_s *s, cJSON *msg) {
+void mx_add_class_orang(t_s *s) {
+    gtk_style_context_add_class(s->h->c_v_l_btn_ru, "orang");
+    gtk_style_context_add_class(s->h->c_v_l_btn_en, "orang");
+    gtk_style_context_add_class(s->h->c_v_l_btn_rm, "orang");
+    gtk_style_context_add_class(s->h->c_v_scroll, "orang");
+    gtk_style_context_add_class(s->h->c_v_main_e, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_e, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_like, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_aut, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_info, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_s1, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_s2, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_s3, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_s4, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_s5, "orang");
+    gtk_style_context_add_class(s->h->c_v_bt_s6, "orang");
+    gtk_style_context_add_class(s->h->c_v_t_btn_b, "orang");
+    gtk_style_context_add_class(s->h->c_v_t_btn_w, "orang");
+}
+
+
+
+gboolean mx_set_standart_c (t_s *s) {
+    mx_set_styles(s);
+    return G_SOURCE_REMOVE;
+}
+
+void mx_create_msg(t_s *s, cJSON *msg) {
     t_info *inf = malloc(sizeof(t_info));
     
     inf->author = cJSON_GetObjectItemCaseSensitive(msg, "login")->valuestring;
@@ -1244,27 +1383,32 @@ void create_msg(t_s *s, cJSON *msg) {
     inf->id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
     int sound = cJSON_GetObjectItemCaseSensitive(msg, "sound")->valueint;
     
-    if(sound)
+    if (sound && s->h->is_output_sound)
         write(1,"\a",1);
-    create_row(inf, s);
-
+    if (sound && s->h->is_output_visual) {
+        mx_remove_class_white(s);
+        mx_remove_class_black(s);
+        mx_add_class_orang(s);
+        g_timeout_add(3000, (GSourceFunc)mx_set_standart_c, s);
+    }
+    mx_create_row(inf, s);
 }
 
-void delete_msg(t_s *s, cJSON *msg) {
+void mx_delete_msg(t_s *s, cJSON *msg) {
     s->h->d_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
 }
 
-void edit_mess(t_s *s, cJSON *msg) {
+void mx_edit_mess(t_s *s, cJSON *msg) {
     s->h->e_id = cJSON_GetObjectItemCaseSensitive(msg, "id")->valueint;
     s->h->edit_txt = cJSON_GetObjectItemCaseSensitive(msg, "msg")->valuestring;
 }
 
-void init_connect_msg(t_s *s, cJSON *msg) {
-    s->h->was_connect = cJSON_GetObjectItemCaseSensitive(msg, "conn_id")->valueint;
-    // printf("%d\n", s->h->was_connect);
+void mx_init_connect_msg(t_s *s, cJSON *msg) {
+    s->h->was_connect = cJSON_GetObjectItemCaseSensitive(msg,
+        "conn_id")->valueint;
 }
 
-void drop_acc(GtkWidget *widget, t_s *s) {
+void mx_drop_acc(GtkWidget *widget, t_s *s) {
     (void)widget;
     cJSON *send = cJSON_CreateObject();
 
@@ -1273,40 +1417,84 @@ void drop_acc(GtkWidget *widget, t_s *s) {
     char *res = cJSON_Print(send);
 
     tls_write(s->c->tls, res, strlen(res) + 1);
-    closeApp2(s->h->v_window, s);
-
+    mx_closeApp2(s->h->v_window, s);
 }
 
-void droping_account(t_s *s, cJSON *msg) {
+
+
+void mx_droping_account(t_s *s, cJSON *msg) {
     s->h->drop_acc = cJSON_GetObjectItemCaseSensitive(msg, "drop_user")->valuestring;
 
     if (!strcmp(s->h->drop_acc, s->h->login))
-        drop_acc(NULL, s);
+        mx_drop_acc(NULL, s);
 }
 
-void check_mesage_from_serv(t_s *s, cJSON *msg) {
+gboolean mx_set_cant_delete_all_mes(t_s *s) {
+    s->h->is_drop_all_messages = 0;
+    return G_SOURCE_REMOVE;
+}
+
+void mx_drop_all_messages(t_s *s) {
+    s->h->is_drop_all_messages = 1;
+    g_timeout_add(2000, (GSourceFunc)mx_set_cant_delete_all_mes, s);
+}
+
+char *mx_create_privat_message_body(cJSON *msg) {
+    char *sss = mx_strneww(1024);
+    char *who_send = cJSON_GetObjectItemCaseSensitive(msg, "who_send")->valuestring;
+    char *msgg = cJSON_GetObjectItemCaseSensitive(msg, "msg")->valuestring;
+
+    sprintf(sss, "%s: %s", who_send, msgg);
+    return sss;
+}
+
+void mx_create_privat_mes(t_s *s, cJSON *msg) {
+    char *who_get = cJSON_GetObjectItemCaseSensitive(msg, "to_user")->valuestring;
+
+    if(!strcmp(who_get, s->h->login)) {
+        t_inf_row *inf = malloc(sizeof(t_inf_row));
+        char *str = mx_create_privat_message_body(msg);
+
+        inf->v_row = gtk_list_box_row_new();
+        gtk_list_box_insert((GtkListBox *)s->h->v_listbox, inf->v_row, s->h->v_n);
+        s->h->v_n++;
+        inf->v_hrow = gtk_box_new(FALSE, 0);
+        gtk_container_add(GTK_CONTAINER(inf->v_row), inf->v_hrow);
+        inf->v_body = gtk_label_new(str);
+        gtk_box_pack_start(GTK_BOX(inf->v_hrow), inf->v_body, FALSE, FALSE, 0);
+        gtk_widget_set_size_request(inf->v_body, 250, 50);
+        gtk_label_set_xalign((GtkLabel *)inf->v_body, 0.1);
+        mx_set_class_for_help(inf);
+    }
+    g_idle_add ((int (*)(void *))mx_show_widget, s->h->v_window);
+}
+
+void mx_check_mesage_from_serv(t_s *s, cJSON *msg) {
     char *ch = cJSON_GetObjectItemCaseSensitive(msg, "kind")->valuestring;
 
-
     if (!strcmp(ch, "msg"))
-        create_msg(s, msg);
+        mx_create_msg(s, msg);
     if (!strcmp(ch, "delete"))
-        delete_msg(s, msg);
+        mx_delete_msg(s, msg);
     if (!strcmp(ch, "connection"))
-        init_connect_msg(s, msg);
+        mx_init_connect_msg(s, msg);
     if (!strcmp(ch, "drop_user"))
-        droping_account(s, msg);
+        mx_droping_account(s, msg);
     if (!strcmp(ch, "edit"))
-        edit_mess(s, msg);
+        mx_edit_mess(s, msg);
+    if (!strcmp(ch, "drop_all_mess"))
+        mx_drop_all_messages(s);
+    if (!strcmp(ch, "privat_mess"))
+        mx_create_privat_mes(s, msg);
 }
 
-void can_deleting_set(t_s *s) {
-    s->h->can_delete_msg = 1;
+void mx_can_deleting_set(t_s *s) {
+    s->h->can_do_msg = 1;
 }
 
-void watcher_thread(t_s *s) {
-    s->h->can_delete_msg = 1;
-    g_timeout_add(8000, (GSourceFunc)can_deleting_set, s);
+void mx_watcher_thread(t_s *s) {
+    s->h->can_do_msg = 1;
+    g_timeout_add(3000, (GSourceFunc)mx_can_deleting_set, s);
     while (true) {
         bzero(s->c->bufs, 1000);
         poll(s->c->pfd, 2, -1);
@@ -1315,13 +1503,13 @@ void watcher_thread(t_s *s) {
                 break;
             cJSON *msg = cJSON_Parse(s->c->bufs);
             printf("%s\n", s->c->bufs);
-            check_mesage_from_serv(s, msg);
+            mx_check_mesage_from_serv(s, msg);
         }
     }
 }
 
 
-void create_eng(t_s *s) {
+void mx_create_eng(t_s *s) {
     s->h->v_l_btn_ru = gtk_button_new_with_label("RUS");
     s->h->v_l_btn_en = gtk_button_new_with_label("ENG");
     s->h->v_l_btn_rm = gtk_button_new_with_label("Delete");
@@ -1337,7 +1525,7 @@ void create_eng(t_s *s) {
     s->h->v_bt_s6 = gtk_button_new_with_label("Hello");
 }
 
-void create_rus(t_s *s) {
+void mx_create_rus(t_s *s) {
     s->h->v_l_btn_ru = gtk_button_new_with_label("РУС");
     s->h->v_l_btn_en = gtk_button_new_with_label("АНГ");
     s->h->v_l_btn_rm = gtk_button_new_with_label("Удалить");
@@ -1353,16 +1541,16 @@ void create_rus(t_s *s) {
     s->h->v_bt_s6 = gtk_button_new_with_label("Привет");
 }
 
-void create_content(t_s *s) {
-    if(!strcmp(s->h->lang, "eng")){
-        create_eng(s);
+void mx_create_content(t_s *s) {
+    if (!strcmp(s->h->lang, "eng")) {
+        mx_create_eng(s);
         return;
     }
-    if(!strcmp(s->h->lang, "rus")) {
-        create_rus(s);
+    if (!strcmp(s->h->lang, "rus")) {
+        mx_create_rus(s);
         return;
     }
-    create_eng(s);
+    mx_create_eng(s);
 }
 
 
@@ -1371,7 +1559,7 @@ void mx_1_chat_init(t_s *s) {
     s->h->lang = s->l->lang;
     s->h->v_n = 0;
     s->h->theme = s->l->theme;
-    create_content(s);
+    mx_create_content(s);
     s->h->v_scroll = gtk_scrolled_window_new(0,0);
     s->h->v_t_btn_b = gtk_button_new_with_label("   ");
     s->h->v_t_btn_w = gtk_button_new_with_label("   ");
@@ -1385,6 +1573,7 @@ void mx_1_chat_init(t_s *s) {
     s->h->v_listbox = gtk_list_box_new();
     s->h->v_main_e = gtk_entry_new();
 }
+
 
 void mx_2_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->T_b), s->h->v_l_btn_ru, FALSE, TRUE, 0);
@@ -1406,7 +1595,7 @@ void mx_2_chat_init(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_main_e, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->ent_box), s->h->v_bt_e, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(s->h->vbox), s->h->ent_box, TRUE, FALSE, 0);
-    g_signal_connect(G_OBJECT(s->h->v_bt_e), "clicked", G_CALLBACK(do_s), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_e), "clicked", G_CALLBACK(mx_do_s), s);
     gtk_widget_set_size_request(s->h->v_bt_e,200,50);
 }
 
@@ -1512,7 +1701,7 @@ void mx_add_class_black(t_s *s) {
     gtk_style_context_add_class(s->h->c_v_t_btn_w, "black");
 }
 
-void set_white(t_s *s) {
+void mx_set_white(t_s *s) {
     mx_remove_class_black(s);
     mx_add_class_white(s);
     cJSON *send = cJSON_CreateObject();
@@ -1527,7 +1716,7 @@ void set_white(t_s *s) {
 }
 
 
-void set_black(t_s *s) {
+void mx_set_black(t_s *s) {
     mx_remove_class_white(s);
     mx_add_class_black(s);
     cJSON *send = cJSON_CreateObject();
@@ -1541,7 +1730,7 @@ void set_black(t_s *s) {
     tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
-void set_standart_style(t_s *s) {
+void mx_set_standart_style(t_s *s) {
     gtk_style_context_add_class(s->h->c_v_t_btn_b, "black_theme");
     gtk_style_context_add_class(s->h->c_v_t_btn_w, "white_theme");
     gtk_widget_set_name(s->h->v_main_e, "main_entry");
@@ -1550,16 +1739,16 @@ void set_standart_style(t_s *s) {
 
 void mx_set_styles(t_s *s) {
     if (!strcmp(s->h->theme, "black")) {
-        set_black(s);
-        set_standart_style(s);
+        mx_set_black(s);
+        mx_set_standart_style(s);
         return;
     }
     if (!strcmp(s->h->theme, "white")) {
-        set_white(s);
-        set_standart_style(s);
+        mx_set_white(s);
+        mx_set_standart_style(s);
         return;
     }
-    set_black(s);
+    mx_set_black(s);
 }
 
 void mx_4_chat_init(t_s *s) {
@@ -1585,17 +1774,18 @@ void mx_4_chat_init(t_s *s) {
     mx_set_styles(s);
 }
 
-void set_b(GtkWidget *widget, t_s *s) {
+
+void mx_set_b(GtkWidget *widget, t_s *s) {
     (void)widget;
-    set_black(s);
+    mx_set_black(s);
     
 }
-void set_w(GtkWidget *widget, t_s *s) {
+void mx_set_w(GtkWidget *widget, t_s *s) {
     (void)widget;
-    set_white(s);
+    mx_set_white(s);
 }
 
-void set_engl(t_s *s) {
+void mx_set_engl(t_s *s) {
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_ru, "RUS");
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_en, "ENG");
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_rm, "Delete");
@@ -1612,7 +1802,7 @@ void set_engl(t_s *s) {
     s->h->lang = "eng";
 }
 
-void set_russ(t_s *s) {
+void mx_set_russ(t_s *s) {
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_ru, "РУС");
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_en, "АНГ");
     gtk_button_set_label((GtkButton *)s->h->v_l_btn_rm, "Удалить");
@@ -1629,9 +1819,9 @@ void set_russ(t_s *s) {
     s->h->lang = "rus";
 }
 
-void set_en(GtkWidget *widget, t_s *s) {
+void mx_set_en(GtkWidget *widget, t_s *s) {
     (void)widget;
-    set_engl(s);
+    mx_set_engl(s);
     cJSON *send = cJSON_CreateObject();
 
     cJSON_AddStringToObject(send, "kind", "ui");
@@ -1643,9 +1833,9 @@ void set_en(GtkWidget *widget, t_s *s) {
     tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
-void set_ru(GtkWidget *widget, t_s *s) {
+void mx_set_ru(GtkWidget *widget, t_s *s) {
     (void)widget;
-    set_russ(s);
+    mx_set_russ(s);
     cJSON *send = cJSON_CreateObject();
 
     cJSON_AddStringToObject(send, "kind", "ui");
@@ -1657,71 +1847,83 @@ void set_ru(GtkWidget *widget, t_s *s) {
     tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
+void mx_5_chat_init(t_s *s) {
+    s->h->d_id = -2;
+    s->h->is_output_matyki = 0;
+    s->h->is_output_sound = 1;
+    s->h->is_output_visual = 0;
+    s->h->is_drop_all_messages = 0;
+    g_signal_connect(G_OBJECT(s->h->v_l_btn_en), "clicked", 
+        G_CALLBACK(mx_set_en), s);
+    g_signal_connect(G_OBJECT(s->h->v_l_btn_ru), "clicked",
+        G_CALLBACK(mx_set_ru), s);
+    g_signal_connect(G_OBJECT(s->h->v_t_btn_b), "clicked",
+        G_CALLBACK(mx_set_b), s);
+    g_signal_connect(G_OBJECT(s->h->v_t_btn_w), "clicked", 
+        G_CALLBACK(mx_set_w), s);
+    g_signal_connect(G_OBJECT(s->h->v_l_btn_rm), "clicked", 
+        G_CALLBACK(mx_drop_acc), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_inf), "clicked", 
+        G_CALLBACK(mx_inf), s);
+}
 
+void mx_6_chat_init(t_s *s) {
+    g_signal_connect(G_OBJECT(s->h->v_bt_lik), "clicked", 
+        G_CALLBACK(mx_sen0), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_aut), "clicked", 
+        G_CALLBACK(mx_sen1), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s1), "clicked", 
+        G_CALLBACK(mx_sen2), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s2), "clicked",
+        G_CALLBACK(mx_sen3), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s3), "clicked", 
+        G_CALLBACK(mx_sen4), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s4), "clicked",
+        G_CALLBACK(mx_sen5), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s5), "clicked",
+        G_CALLBACK(mx_sen6), s);
+    g_signal_connect(G_OBJECT(s->h->v_bt_s6), "clicked",
+        G_CALLBACK(mx_sen7), s);
+}
 
-void init_chatt(t_s *s) {
+void mx_7_chat_init(t_s *s) {
+    gtk_container_add(GTK_CONTAINER(s->h->v_scroll), s->h->v_listbox);
+    g_signal_connect(s->h->v_window,"destroy",G_CALLBACK(mx_closeApp2), s);
+    gtk_scrolled_window_set_max_content_width(
+        (GtkScrolledWindow *)s->h->v_scroll, 500);
+    gtk_window_set_title(GTK_WINDOW(s->h->v_window), (const gchar *)"uchat");
+    gtk_widget_show_all((GtkWidget *)s->h->v_window);
+}
+
+void mx_send_conection(t_s *s) {
+    cJSON *send = cJSON_CreateObject();
+    char *res;
+
+    cJSON_AddStringToObject(send, "kind", "connection");
+    res = cJSON_Print(send);
+    tls_write(s->c->tls, res, strlen(res) + 1);
+}
+
+void mx_init_chatt(t_s *s) {
     mx_1_chat_init(s);
     mx_2_chat_init(s);
     mx_3_chat_init(s);
     mx_4_chat_init(s);
-    s->h->d_id = -2;
-    s->h->is_output_matyki = 0;
-
-    
-    g_signal_connect(G_OBJECT(s->h->v_l_btn_en), "clicked", G_CALLBACK(set_en), s);
-    g_signal_connect(G_OBJECT(s->h->v_l_btn_ru), "clicked", G_CALLBACK(set_ru), s);
-    
-
-    
-    g_signal_connect(G_OBJECT(s->h->v_t_btn_b), "clicked", G_CALLBACK(set_b), s);
-    g_signal_connect(G_OBJECT(s->h->v_t_btn_w), "clicked", G_CALLBACK(set_w), s);
-    g_signal_connect(G_OBJECT(s->h->v_l_btn_rm), "clicked", G_CALLBACK(drop_acc), s);
-
-
-    
-    g_signal_connect(G_OBJECT(s->h->v_bt_inf), "clicked", G_CALLBACK(inf), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_lik), "clicked", G_CALLBACK(sen0), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_aut), "clicked", G_CALLBACK(sen1), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s1), "clicked", G_CALLBACK(sen2), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s2), "clicked", G_CALLBACK(sen3), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s3), "clicked", G_CALLBACK(sen4), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s4), "clicked", G_CALLBACK(sen5), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s5), "clicked", G_CALLBACK(sen6), s);
-    g_signal_connect(G_OBJECT(s->h->v_bt_s6), "clicked", G_CALLBACK(sen7), s);
-
-    gtk_container_add(GTK_CONTAINER(s->h->v_scroll), s->h->v_listbox);
-    g_signal_connect(s->h->v_window,"destroy",G_CALLBACK(closeApp2), s);
-    gtk_scrolled_window_set_max_content_width ((GtkScrolledWindow *)s->h->v_scroll, 500);
-    gtk_window_set_title(GTK_WINDOW(s->h->v_window), (const gchar *)"uchat");
-    gtk_widget_show_all((GtkWidget *)s->h->v_window);
-
-    // char *m = mx_strjoin(s->h->login, " conacted");
-    cJSON *send = cJSON_CreateObject();
-    char *res;
-    cJSON_AddStringToObject(send, "kind", "connection");
-    // cJSON_AddStringToObject(send, "login", s->h->login);
-    // cJSON_AddStringToObject(send, "msg", m);
-    res = cJSON_Print(send);
-
-    // if (strlen(m) < 100 && strlen(m) > 0)
-    // // message_send(m);
-    // printf("%s\n", res);
-    // else {
-    //     printf("to manywords\n");
-    // }
-    tls_write(s->c->tls, res, strlen(res) + 1);
-
+    mx_5_chat_init(s);
+    mx_6_chat_init(s);
+    mx_7_chat_init(s);
+    mx_send_conection(s);
+    // gtk_window_set_position(GTK_WINDOW(s->h->v_window),
+    //     GTK_WIN_POS_CENTER_ALWAYS);  !!!!
     pthread_t thread_input;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    int tc = pthread_create(&thread_input, &attr, (void * _Nullable (* _Nonnull)(void * _Nullable))watcher_thread, s);
+    int tc = pthread_create(&thread_input, &attr, 
+        (void *_Nullable(*_Nonnull)(void *_Nullable))mx_watcher_thread, s);
+    
     if (tc != 0)
-        printf("pthread_create error = %s\n", strerror(tc));
-
-
-    
-    
+        printf("pthread_create error = %s\n", strerror(tc));    
 }
 
 
@@ -1740,13 +1942,16 @@ int mx_check_on_input(GtkWidget *widget, t_s *s) {
         return 1;
     }
     if (strlen(password) > 30 || strlen(login) > 30) {
-        gtk_label_set_text((GtkLabel *)s->l->e_lbl, "Password or login is tooooo long");
+        gtk_label_set_text((GtkLabel *)s->l->e_lbl, "Password very long");
         return 1;
     }
     s->l->login = (char *)login;
     s->l->pass = (char *)password;
     return 0;
 }
+
+
+
 
 void mx_work_in_while(t_s *s) {
     cJSON *msg = cJSON_Parse(s->c->bufs);
@@ -1777,7 +1982,7 @@ void mx_init_while_login(t_s *s) {
     }
 }
 
-void do_logining(GtkWidget *widget, t_s *s) {
+void mx_do_logining(GtkWidget *widget, t_s *s) {
     if (mx_check_on_input(widget, s))
         return;
     cJSON *send = cJSON_CreateObject();
@@ -1786,17 +1991,18 @@ void do_logining(GtkWidget *widget, t_s *s) {
     cJSON_AddStringToObject(send, "login", s->l->login);
     cJSON_AddStringToObject(send, "pasword", s->l->pass);
     char *res = cJSON_Print(send);
-    if (init_server(s, s->l->argv))
+
+    if (mx_init_server(s, s->l->argv))
         mx_exit_chat(s);
     tls_write(s->c->tls, res, strlen(res) + 1);
     mx_init_while_login(s);
 }
 
-gboolean check_logining(t_s *s) {
-    if(s->l->login_in) {
+gboolean mx_check_logining(t_s *s) {
+    if (s->l->login_in) {
         s->l->login_in = 0;
         gtk_widget_hide(s->l->win);
-        init_chatt(s);
+        mx_init_chatt(s);
         return G_SOURCE_REMOVE;
     }
     return G_SOURCE_CONTINUE;
@@ -1824,7 +2030,7 @@ void mx_init_logining_1(t_s *s) {
 }
 
 void mx_init_logining_2(t_s *s) {
-    // gtk_window_set_position(GTK_WINDOW(s->l->win), GTK_WIN_POS_CENTER_ALWAYS); !!!!!
+    // gtk_window_set_position(GTK_WINDOW(s->l->win), GTK_WIN_POS_CENTER_ALWAYS);!!!!
     gtk_entry_set_visibility(GTK_ENTRY(s->l->pass_ety), FALSE);
     gtk_window_set_resizable (GTK_WINDOW(s->l->win), FALSE);
     gtk_css_provider_load_from_path(s->l->SP, "src/client/theme.css", NULL);
@@ -1832,7 +2038,8 @@ void mx_init_logining_2(t_s *s) {
         GTK_STYLE_PROVIDER(s->l->SP),
         GTK_STYLE_PROVIDER_PRIORITY_USER);
     gtk_window_set_title(GTK_WINDOW(s->l->win), "Uchat");
-    g_signal_connect(G_OBJECT(s->l->win), "destroy", G_CALLBACK(gtk_main_quit), s);
+    g_signal_connect(G_OBJECT(s->l->win), "destroy",
+        G_CALLBACK(gtk_main_quit), s);
     s->l->c_window = gtk_widget_get_style_context(s->l->win);
     s->l->c_main_label = gtk_widget_get_style_context(s->l->main_l);
     s->l->c_user_lbl = gtk_widget_get_style_context(s->l->user_lbl);
@@ -1878,22 +2085,20 @@ void mx_init_logining_4(t_s *s) {
     gtk_box_pack_start(GTK_BOX(s->l->vbox), s->l->e_box, FALSE, FALSE, 10);
     gtk_box_pack_start(GTK_BOX(s->l->vbox), s->l->ok_btn_b, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(s->l->ok_btn), "clicked",
-                     G_CALLBACK(do_logining), s);
+                     G_CALLBACK(mx_do_logining), s);
     gtk_container_add(GTK_CONTAINER(s->l->win), s->l->vbox);
-    g_timeout_add(50, (GSourceFunc)check_logining, s);
+    g_timeout_add(50, (GSourceFunc)mx_check_logining, s);
     gtk_widget_show_all(s->l->win);
     gtk_main();
 }
 
-void mx_client_init(t_s *s, int argc, char *argv[]){
+void mx_client_init(t_s *s, int argc, char *argv[]) {
     gtk_init(&argc, &argv);
     mx_init_logining_1(s);
     mx_init_logining_2(s);
     mx_init_logining_3(s);
     mx_init_logining_4(s);
 }
-
-
 
 
 
@@ -1912,5 +2117,4 @@ int main(int argc, char **argv) {
     s->h = malloc(sizeof(t_ct));
     s->l->argv = argv;
     mx_client_init(s, argc, argv);
-    
 }
