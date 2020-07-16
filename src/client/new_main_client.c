@@ -66,7 +66,7 @@ typedef struct s_ct {
     char *edit_txt;
     int was_connect;
     int can_delete_msg;
-
+    int is_output_matyki;
 
     GtkWidget *v_window;
     GtkWidget *v_main_grid;
@@ -335,25 +335,33 @@ char *help_str(t_s *s){
 bool mx_isspace(char c) {
     return c == 32 || (c > 8 && c < 14);
 }
+char *mx_strnew_sasha(const int size, char c) {
+    char *ptr = NULL;
 
-char *trim(char *s) {
-    unsigned long i = 0;
-    unsigned long j;
-
-    while ((s[i] == ' ') || (s[i] == '\t'))
-        i++;
-    if (i > 0) {
-        for (j = 0; j < strlen(s); j++)
-              s[j]=s[j+i];
-        s[j]='\0';
+    if (size >= 0 && (ptr = (char *)malloc(size + 1))) {
+        for (int i = 0; i < size; ++i)
+            ptr[i] = c;
+        ptr[size] = '\0';
     }
-    i = strlen(s)-1;
-    while (mx_isspace(s[i]))
-        i--;
-    if (i < (strlen(s) - 1))
-        s[i + 1] = '\0';
-    return s;
+    return ptr;
 }
+
+
+char *mx_strtrim(const char *str) {
+    if (str) {
+        int start = 0;
+        int end = mx_strlen(str) - 1;
+        char *new_str = NULL;
+
+        for (; mx_isspace(str[start]); ++start);
+        for (; mx_isspace(str[end]) && end > start; --end);
+        new_str = mx_strnew_sasha(end > start ? end - start + 1 : 0, '\0');
+        mx_strncpy(new_str, str + start, end - start + 1);
+        return new_str;
+    }
+    return NULL;
+}
+
 
 int mx_is_digit_for_editing(char *m, int i[2]) {
     char sss[1000];
@@ -535,6 +543,20 @@ char *change_pass_creating(char *m, t_s *s) {
     return cJSON_Print(send);
 }
 
+int is_have_matyki(char *m, t_s *s) {
+    if(strlen(m) == 3) {
+        if(m[0] == '|' && m[1] == 'm' && m[2] == '|') {
+            if (s->h->is_output_matyki)
+                s->h->is_output_matyki = 0;
+            else 
+                s->h->is_output_matyki = 1;
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+
 char *parsing_mes(char *m, t_s *s) {
     cJSON *send = cJSON_CreateObject();
 
@@ -544,6 +566,8 @@ char *parsing_mes(char *m, t_s *s) {
         return drop_creating(m, s);
     else if (is_have_change_pass(m))
         return change_pass_creating(m, s);
+    else if (is_have_matyki(m, s))
+        return NULL;
     cJSON_AddStringToObject(send, "kind", "msg");
     cJSON_AddStringToObject(send, "login", s->h->login);
     cJSON_AddStringToObject(send, "msg", m);
@@ -551,16 +575,16 @@ char *parsing_mes(char *m, t_s *s) {
 }
 
 void do_s(GtkWidget *widget, t_s *s) {
-    char *message = (char *)gtk_entry_get_text(GTK_ENTRY(s->h->v_main_e));
-    if(!message || !*message)
+    char *message = mx_strtrim((char *)gtk_entry_get_text(GTK_ENTRY(s->h->v_main_e)));
+ 
+    if(!message || !*message )
         return;
-    char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
-    char *res = parsing_mes(m, s);
-    printf("%s\n", res);
-    if (strlen(m) < 110 && strlen(m) > 0) {
-        tls_write(s->c->tls, res, strlen(res) + 1);
-        printf("%s\n", res);
+
+    if (strlen(message) < 110 && strlen(message) > 0) {
+        char *res = parsing_mes(message, s);
+        if(res != NULL)
+            tls_write(s->c->tls, res, strlen(res) + 1);
+            printf("%s\n", res);
     }
     else {
         printf("to manywords\n");
@@ -578,7 +602,6 @@ void drop_sesion(t_s *s) {
     cJSON_AddStringToObject(send, "login", s->h->login);
     cJSON_AddNumberToObject(send, "drop_id", s->h->was_connect);
     res = cJSON_Print(send);
-    printf("%s\n", res);
     tls_write(s->c->tls, res, strlen(res) + 1);
 }
 
@@ -625,7 +648,6 @@ void closeApp(GtkWidget *window, t_s *s)
     gtk_main_quit();
 }
 void closeApp2(GtkWidget *window, t_s *s) { 
-    printf("1\n");
     drop_sesion(s);
     closeApp(window, s);
 }
@@ -691,7 +713,7 @@ char *what_return(int gg) {
 void sen0(GtkWidget *widget, t_s *s) {
     char *message = what_return(0);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -708,7 +730,7 @@ void sen0(GtkWidget *widget, t_s *s) {
 void sen1(GtkWidget *widget, t_s *s) {
     char *message = what_return(1);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -725,7 +747,7 @@ void sen1(GtkWidget *widget, t_s *s) {
 void sen2(GtkWidget *widget, t_s *s) {
     char *message = what_return(2);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -742,7 +764,7 @@ void sen2(GtkWidget *widget, t_s *s) {
 void sen3(GtkWidget *widget, t_s *s) {
     char *message = what_return(3);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -760,7 +782,7 @@ void sen3(GtkWidget *widget, t_s *s) {
 void sen4(GtkWidget *widget, t_s *s) {
     char *message = what_return(4);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -776,7 +798,7 @@ void sen4(GtkWidget *widget, t_s *s) {
 void sen5(GtkWidget *widget, t_s *s) {
     char *message = what_return(5);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -792,7 +814,7 @@ void sen5(GtkWidget *widget, t_s *s) {
 void sen6(GtkWidget *widget, t_s *s) {
     char *message = what_return(6);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -808,7 +830,7 @@ void sen6(GtkWidget *widget, t_s *s) {
 void sen7(GtkWidget *widget, t_s *s) {
     char *message = what_return(7);
     char *m = malloc(strlen(message) + 1);    
-    strcpy(m, trim(message));
+    strcpy(m, mx_strtrim(message));
     cJSON *send = cJSON_CreateObject();
     char *res;
 
@@ -914,7 +936,7 @@ void print_X(t_row *row, t_info *inf, t_s *s) {
         g_signal_connect(G_OBJECT(row->v_bt_del), "clicked", G_CALLBACK(delete), c);
     }
     
-    g_timeout_add(1, (GSourceFunc)check_editing, c);
+    g_timeout_add(10, (GSourceFunc)check_editing, c);
 }
 
 void edit(GtkWidget *widget, t_for_click *c) {
@@ -938,8 +960,6 @@ void print_E(t_row *row, t_info *inf, t_s *s) {
         gtk_style_context_add_class(row->c_v_bt_ed, "X");
         g_signal_connect(G_OBJECT(row->v_bt_ed), "clicked", G_CALLBACK(edit), c);
     }
-    
-    // g_timeout_add(50, (GSourceFunc)check_editing, c);
 }
 
 void set_bold_line(t_row *row) {
@@ -958,46 +978,31 @@ void set_italic_line(t_row *row) {
 void set_red_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "red");
     gtk_style_context_add_class (row->c_v_time, "red");
-    gtk_style_context_add_class (row->c_v_body, "red");
-    // if(!strcmp(inf->author, chat->login)) {
-    //     gtk_style_context_add_class (row->c_v_bt_del, "red");
-    // }   
+    gtk_style_context_add_class (row->c_v_body, "red");   
 }
 
 void set_lime_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "lime");
     gtk_style_context_add_class (row->c_v_time, "lime");
-    gtk_style_context_add_class (row->c_v_body, "lime");
-    // if(!strcmp(inf->author, chat->login)) {
-    //     gtk_style_context_add_class (row->c_v_bt_del, "lime");
-    // }   
+    gtk_style_context_add_class (row->c_v_body, "lime"); 
 }
 
 void set_orange_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "orange");
     gtk_style_context_add_class (row->c_v_time, "orange");
-    gtk_style_context_add_class (row->c_v_body, "orange");
-    // if(!strcmp(inf->author, chat->login)) {
-    //     gtk_style_context_add_class (row->c_v_bt_del, "orange");
-    // }   
+    gtk_style_context_add_class (row->c_v_body, "orange"); 
 }
 
 void set_h1_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "h1");
     gtk_style_context_add_class (row->c_v_time, "h1");
     gtk_style_context_add_class (row->c_v_body, "h1");
-    // if (!strcmp(inf->author, chat->login)) {
-    //     gtk_style_context_add_class (row->c_v_bt_del, "h1");
-    // }
 }
 
 void set_h2_line(t_row *row) {
     gtk_style_context_add_class (row->c_v_author, "h2");
     gtk_style_context_add_class (row->c_v_time, "h2");
     gtk_style_context_add_class (row->c_v_body, "h2");
-    // if(!strcmp(inf->author, chat->login)) {
-    //     gtk_style_context_add_class (row->c_v_bt_del, "h2");
-    // }
 }
 
 void set_styles_for_mess(t_row *row, char *str, t_info *inf) {
@@ -1053,9 +1058,7 @@ void set_class_for_elem(t_row *row, t_info *inf) {
 void end_initing(t_row *row, t_info *inf, t_s *s) {
     (void)inf,(void) s;
     gtk_box_pack_start(GTK_BOX(row->v_hrow), row->v_body, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(row->v_body,100,30);
-    // if(!check_on_cmd(inf->body))
-    //     gtk_label_set_xalign((GtkLabel *)row->v_body, 0.04);
+    gtk_widget_set_size_request(row->v_body,100,30);    
     gtk_widget_set_size_request(row->v_body,80,30);
     print_X(row, inf, s);
     print_E(row, inf, s);
@@ -1144,11 +1147,70 @@ int is_have_cmd(char *str) {
     return 0;
 }
 
-char *get_new_body(char *str) {
+int mx_arr_size(char **arr) {
+    int result = 0;
+
+    while (*arr) {
+        result++;
+        arr++;
+    }
+    return result;
+}
+
+char *mx_strncat(char *restrict s1, const char *restrict s2, size_t n) {
+    char *save = s1;
+
+    s1 += mx_strlen(s1);
+    mx_strncpy(s1, s2, n);
+    return save;
+}
+
+char *mx_replace_sub(const char *str, const char *sub,
+                        const char *replace) {
+    int subs = mx_count_substr(str, sub);
+    int subs_length = mx_strlen(sub) * subs;
+    int replace_length = mx_strlen(replace) * subs;
+    char *result = NULL;
+    int index = 0;
+
+    if (!*str || !*sub) {
+        return NULL;
+    }
+    result = mx_strnew(mx_strlen(str) - subs_length + replace_length);
+    while ((index = mx_get_substr_index(str, sub)) != -1) {
+        mx_strncat(result, str, index);
+        mx_strcat(result, replace);
+        str += index + mx_strlen(sub);
+    }
+    mx_strcat(result, str);
+    return result;
+}
+
+char *get_without_mats(char *new_str) {
+    char *arr_eng_mats[1024] = {"fuck", "dick", "suck", "shut", "cocks", 
+        "condom", "fart", "pussy", "ass", "bitch", "shit"};
+    char *arr_rus_mats[1024] = {"хуй", "гавно", "лох", "сука", "пососи",
+        "ретард", "pidor", "гамосек", "сосунок", "даун", "аутист", "блядь",
+        "ебать", "тупо", "шлюха", "деби", "гей", "отбитый", "конча"};
+
+    for (int i = 0; i < mx_arr_size(arr_eng_mats); i++) {
+        new_str = mx_replace_sub(new_str, arr_eng_mats[i], "***");
+    }
+    for (int i = 0; i < mx_arr_size(arr_rus_mats); i++) {
+        new_str = mx_replace_sub(new_str, arr_rus_mats[i], "***");
+    }
+    sprintf(new_str, "%s", new_str);
+    return new_str;
+}
+
+char *get_new_body(char *str, t_s *s) {
     char *new_str = strdup(str);
 
     if (is_have_cmd(new_str)) {
         new_str = get_new_body_str(new_str);
+    }
+    if (s->h->is_output_matyki) {
+        new_str = get_without_mats(new_str);
     }
     return new_str;
 }
@@ -1165,7 +1227,7 @@ void create_row(t_info *inf, t_s *s) {
     }
     else if (!check_on_cmd(inf->body)) {
         row->is_sticker = 1;
-        char *new_body = get_new_body(inf->body);
+        char *new_body = get_new_body(inf->body, s);
         row->v_body = gtk_label_new(new_body);
     }
     end_initing(row, inf, s);
@@ -1602,7 +1664,7 @@ void init_chatt(t_s *s) {
     mx_3_chat_init(s);
     mx_4_chat_init(s);
     s->h->d_id = -2;
-
+    s->h->is_output_matyki = 0;
 
     
     g_signal_connect(G_OBJECT(s->h->v_l_btn_en), "clicked", G_CALLBACK(set_en), s);
