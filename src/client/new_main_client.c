@@ -311,7 +311,8 @@ char *help_str_eng() {
         "If you are admin you can kick users: |k_user|\n"
         "Change password: |p_new_password|, password can`t be longer 30 chars\n"
         "Message editing: |e1234567890|new_mess\n"
-        "On click Delete you are drop your account FOREVER!!!\n";
+        "On click Delete you are drop your account FOREVER!!!\n"
+        "|m| on anti mat system";
     return sss;
 }
 
