@@ -248,7 +248,6 @@ void mx_print_text(t_row *row, t_info *inf);
 void mx_print_cmd(t_row *row, t_info *inf);
 char *mx_get_new_body_str(char *new_str);
 int mx_is_have_cmd(char *str);
-int mx_arr_size(char **arr);
 char *mx_strncat(char *restrict s1, const char *restrict s2, size_t n);
 char *mx_replace_sub(const char *str, const char *sub,
                      const char *replace);

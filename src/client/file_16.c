@@ -21,7 +21,7 @@ void mx_print_img(t_row *row, t_info *inf) {
 }
 
 
-static char *mx_love() {
+static char *love() {
     char *message = "___$$$$$$$$______$$$$$$$$$\n"
         "_$$$$$$$$$$$$__$$$$$$$__$$$$\n"
         "$$$$$$$$$$$$$$$$$$$$$$$$__$$$\n"
@@ -40,7 +40,7 @@ static char *mx_love() {
 
 void mx_print_text(t_row *row, t_info *inf) {
     if (mx_check_on_cmd(inf->body) == 1)
-        row->v_body = gtk_label_new(mx_love());
+        row->v_body = gtk_label_new(love());
 }
 
 void mx_print_cmd(t_row *row, t_info *inf) {

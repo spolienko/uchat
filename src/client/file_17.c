@@ -9,7 +9,7 @@ int mx_is_have_cmd(char *str) {
     return 0;
 }
 
-int mx_arr_size(char **arr) {
+static int arr_size(char **arr) {
     int result = 0;
 
     while (*arr) {
@@ -58,10 +58,10 @@ char *mx_get_without_mats(char *new_str) {
         "ретард", "pidor", "гамосек", "сосунок", "даун", "аутист", "блядь",
         "ебать", "тупо", "шлюха", "деби", "гей", "отбитый", "конча"};
 
-    for (int i = 0; i < mx_arr_size(arr_eng_mats); i++) {
+    for (int i = 0; i < arr_size(arr_eng_mats); i++) {
         new_str = mx_replace_sub(new_str, arr_eng_mats[i], "***");
     }
-    for (int i = 0; i < mx_arr_size(arr_rus_mats); i++) {
+    for (int i = 0; i < arr_size(arr_rus_mats); i++) {
         new_str = mx_replace_sub(new_str, arr_rus_mats[i], "***");
     }
     sprintf(new_str, "%s", new_str);

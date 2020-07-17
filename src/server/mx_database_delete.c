@@ -20,7 +20,7 @@ int result(void *exist, int argc, char **argv, char **reg) {
     return 0;
 }
 
-int check_in_session(t_data *data, char *login) {
+int mx_check_in_session(t_data *data, char *login) {
     char cmd[1024];
     int exist = 0;
     
@@ -32,7 +32,7 @@ int check_in_session(t_data *data, char *login) {
 int mx_check_login(t_data *data, char *login, char *pas) {
     char *str = "SELECT login FROM users WHERE login=?";
 
-    if (check_in_session(data, login))
+    if (mx_check_in_session(data, login))
         return 0;
     sqlite3_prepare_v2(data->database, str, -1, &data->stmt, 0);
     sqlite3_bind_text(data->stmt, 1, login, strlen(login), SQLITE_STATIC);

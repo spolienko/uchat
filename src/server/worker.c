@@ -221,8 +221,6 @@ static char *do_message2(t_data *data, char *buf, t_connection *conn, int res_in
         return delete_messages(data, buf);
     else if (res_int == 12)
         return buf;
-    else
-        printf("Error reading cJSON from client\n");
     return NULL;
 }
 
