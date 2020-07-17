@@ -31,7 +31,8 @@ void mx_drop_acc(GtkWidget *widget, t_s *s) {
 
 
 void mx_droping_account(t_s *s, cJSON *msg) {
-    s->h->drop_acc = cJSON_GetObjectItemCaseSensitive(msg, "drop_user")->valuestring;
+    s->h->drop_acc = cJSON_GetObjectItemCaseSensitive(msg,
+        "drop_user")->valuestring;
 
     if (!strcmp(s->h->drop_acc, s->h->login))
         mx_drop_acc(NULL, s);

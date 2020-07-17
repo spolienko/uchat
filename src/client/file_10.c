@@ -24,9 +24,6 @@ int mx_check_on_cmd(char *str) {
 
 
 
-
-
-
 char *mx_what_return(int gg) {
     if (gg == 0)
         return "|love|";
