@@ -208,39 +208,40 @@ char *delete_messages(t_data *data, char *buf) {
     return NULL;
 }
 
-
+static char *do_message2(t_data *data, char *buf, t_connection *conn, int res_int) {
+    if (res_int == 7)
+        mx_drop_user_sesion(data, buf, conn);
+    if (res_int == 8)
+        return initing_closing();
+    if (res_int == 9)
+        return drop_user_from_admin(data, buf);
+    if (res_int == 10)
+        change_pass(data, buf);
+    if (res_int == 11)
+        return delete_messages(data, buf);
+    if (res_int == 12)
+        return buf;
+    else
+        printf("Error reading cJSON from client\n");
+    return NULL;
+}
 
 static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connection *conn) {
-    char *res = NULL;
     int res_int = check_kind(buf); 
     
     if (res_int == 1)
         mx_do_login(data, buf, tlsconn, conn);
     if (res_int == 2)
-        res = mx_do_msg(data, buf);
+        return mx_do_msg(data, buf);
     if (res_int == 3)
-        res = mx_do_delete(data, buf);
+        return mx_do_delete(data, buf);
     if (res_int == 4)
-        res = mx_do_edit(data, buf);
+        return mx_do_edit(data, buf);
     if (res_int == 5)
         mx_do_user_interface(data, buf);
     if (res_int == 6)
         mx_drop_user(data, buf);
-    if (res_int == 7)
-        mx_drop_user_sesion(data, buf, conn);
-    if (res_int == 8)
-        res = initing_closing();
-    if (res_int == 9)
-        res = drop_user_from_admin(data, buf);
-    if (res_int == 10)
-        change_pass(data, buf);
-    if (res_int == 11)
-        res = delete_messages(data, buf);
-    if (res_int == 12)
-        res = buf;
-    else
-        printf("Error reading cJSON from client\n");
-    return res;
+    return do_message2(data, buf, conn, res_int);
 }
 
 static char *check_on_conection(char *msg, int con_id) {
@@ -269,7 +270,6 @@ int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
         msg = do_message(data, buf, (struct tls *)conn->connection_array[kEvent->ident], conn);
         for(int i = 3; i <= MX_MAX_CONN; i++){
             if (msg != NULL && (struct tls *)conn->connection_array[i] != NULL ) {
-                printf("sending messege to %d\n", i);
                 msg = check_on_conection(msg, i);
                 tls_write((struct tls *)conn->connection_array[i], msg, strlen(msg));
             }
