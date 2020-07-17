@@ -211,15 +211,15 @@ char *delete_messages(t_data *data, char *buf) {
 static char *do_message2(t_data *data, char *buf, t_connection *conn, int res_int) {
     if (res_int == 7)
         mx_drop_user_sesion(data, buf, conn);
-    if (res_int == 8)
+    else if (res_int == 8)
         return initing_closing();
-    if (res_int == 9)
+    else if (res_int == 9)
         return drop_user_from_admin(data, buf);
-    if (res_int == 10)
+    else if (res_int == 10)
         change_pass(data, buf);
-    if (res_int == 11)
+    else if (res_int == 11)
         return delete_messages(data, buf);
-    if (res_int == 12)
+    else if (res_int == 12)
         return buf;
     else
         printf("Error reading cJSON from client\n");
@@ -231,15 +231,15 @@ static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connecti
     
     if (res_int == 1)
         mx_do_login(data, buf, tlsconn, conn);
-    if (res_int == 2)
+    else if (res_int == 2)
         return mx_do_msg(data, buf);
-    if (res_int == 3)
+    else if (res_int == 3)
         return mx_do_delete(data, buf);
-    if (res_int == 4)
+    else if (res_int == 4)
         return mx_do_edit(data, buf);
-    if (res_int == 5)
+    else if (res_int == 5)
         mx_do_user_interface(data, buf);
-    if (res_int == 6)
+    else if (res_int == 6)
         mx_drop_user(data, buf);
     return do_message2(data, buf, conn, res_int);
 }
