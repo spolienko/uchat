@@ -26,7 +26,7 @@ void mx_do_logining(GtkWidget *widget, t_s *s) {
     char *res = cJSON_Print(send);
 
     if (mx_init_server(s, s->l->argv))
-        mx_exit_chat(s);
+        mx_closeApp(s->l->win, s);
     tls_write(s->c->tls, res, strlen(res) + 1);
     mx_init_while_login(s);
 }

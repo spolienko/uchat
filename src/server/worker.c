@@ -1,36 +1,39 @@
 #include "uchat.h"
 
 
+static int check_kind_2(char *kind) {
+    if (mx_strcmp(kind, "drop_sesion") == 0)
+        return 7;
+    else if (mx_strcmp(kind, "connection") == 0)
+        return 8;
+    else if (mx_strcmp(kind, "drop_user") == 0)
+        return 9;
+    else if (mx_strcmp(kind, "new_password") == 0)
+        return 10;
+    else if (mx_strcmp(kind, "clean_chat") == 0)
+        return 11;
+    else if (mx_strcmp(kind, "privat_mess") == 0)
+        return 12;
+    return 0;
+}
+
 static int check_kind(char *buf) {
     cJSON *str = cJSON_Parse(buf);
     char *kind = cJSON_GetObjectItemCaseSensitive(str, "kind")->valuestring;
-    int res = 0; 
 
     if (mx_strcmp(kind, "login") == 0)
-        res = 1;
+        return 1;
     else if (mx_strcmp(kind, "msg") == 0)
-        res = 2;
+        return 2;
     else if (mx_strcmp(kind, "delete") == 0)
-        res = 3;
+        return 3;
     else if (mx_strcmp(kind, "edit") == 0)
-        res = 4;
+        return 4;
     else if (mx_strcmp(kind, "ui") == 0)
-        res = 5;
+        return 5;
     else if (mx_strcmp(kind, "drop_acc") == 0)
-        res = 6;
-    else if (mx_strcmp(kind, "drop_sesion") == 0)
-        res = 7;
-    else if (mx_strcmp(kind, "connection") == 0)
-        res = 8;
-    else if (mx_strcmp(kind, "drop_user") == 0)
-        res = 9;
-    else if (mx_strcmp(kind, "new_password") == 0)
-        res = 10;
-    else if (mx_strcmp(kind, "clean_chat") == 0)
-        res = 11;
-    else if (mx_strcmp(kind, "privat_mess") == 0)
-        res = 12;
-    return res;
+        return 6;
+    return check_kind_2(kind);
 }
 
 void mx_drop(t_data *data, int id) {
@@ -209,47 +212,34 @@ char *delete_messages(t_data *data, char *buf) {
 
 static char *do_message(t_data *data, char *buf, struct tls *tlsconn, t_connection *conn) {
     char *res = NULL;
+    int res_int = check_kind(buf); 
     
-    switch (check_kind(buf)) {
-        case 1:
-            mx_do_login(data, buf, tlsconn, conn);
-            break;
-        case 2:
-            res = mx_do_msg(data, buf);
-            break;
-        case 3:
-            res = mx_do_delete(data, buf);
-            break;
-        case 4:
-            res = mx_do_edit(data, buf);
-            break;
-        case 5:
-            mx_do_user_interface(data, buf);
-            break;
-        case 6:
-            mx_drop_user(data, buf);
-            break;   
-        case 7:
-            mx_drop_user_sesion(data, buf, conn);
-            break;
-        case 8:
-            res = initing_closing();
-            break;    
-        case 9:
-            res = drop_user_from_admin(data, buf);
-            break;
-        case 10:
-            change_pass(data, buf);
-            break;
-        case 11:
-            res = delete_messages(data, buf);
-            break;
-        case 12:
-            res = buf;
-            break; 
-        default:
-            printf("Error reading cJSON from client\n");
-        }
+    if (res_int == 1)
+        mx_do_login(data, buf, tlsconn, conn);
+    if (res_int == 2)
+        res = mx_do_msg(data, buf);
+    if (res_int == 3)
+        res = mx_do_delete(data, buf);
+    if (res_int == 4)
+        res = mx_do_edit(data, buf);
+    if (res_int == 5)
+        mx_do_user_interface(data, buf);
+    if (res_int == 6)
+        mx_drop_user(data, buf);
+    if (res_int == 7)
+        mx_drop_user_sesion(data, buf, conn);
+    if (res_int == 8)
+        res = initing_closing();
+    if (res_int == 9)
+        res = drop_user_from_admin(data, buf);
+    if (res_int == 10)
+        change_pass(data, buf);
+    if (res_int == 11)
+        res = delete_messages(data, buf);
+    if (res_int == 12)
+        res = buf;
+    else
+        printf("Error reading cJSON from client\n");
     return res;
 }
 
