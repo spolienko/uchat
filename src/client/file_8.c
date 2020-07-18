@@ -13,7 +13,7 @@ void mx_do_s(GtkWidget *widget, t_s *s) {
                 tls_write(s->c->tls, res, strlen(res) + 1);
         }
         else
-            printf("\n");
+            printf("");
         gtk_entry_set_text(GTK_ENTRY(s->h->v_main_e), "");
     }
     (void)widget;

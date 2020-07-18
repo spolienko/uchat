@@ -40,7 +40,6 @@ void mx_inf(GtkWidget *widget, t_s *s) {
 void mx_closeApp(GtkWidget *window, t_s *s) {   
     (void)window;
     mx_exit_chat(s);
-    printf("Destroy\n");
     exit(1);
     gtk_main_quit();
 }

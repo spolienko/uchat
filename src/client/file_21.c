@@ -18,7 +18,7 @@ void *mx_watcher_thread(void *ss) {
             if ((s->c->rc = tls_read(s->c->tls, s->c->bufs, 1000)) <= 0) 
                 break;
             cJSON *msg = cJSON_Parse(s->c->bufs);
-            printf("%s\n", s->c->bufs);
+            
             mx_check_mesage_from_serv(s, msg);
         }
     }

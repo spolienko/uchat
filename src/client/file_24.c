@@ -3,7 +3,6 @@
 
 
 void mx_set_styles(t_s *s) {
-    printf("%s\n", s->h->theme);
     if (!strcmp(s->h->theme, "black")) {
         mx_set_black(s);
         mx_set_standart_style(s);

@@ -23,8 +23,6 @@ void mx_report_tls_client(t_s *s, char *host) {
 
 
 
-
-
 int mx_third_serv_init(t_s *s) {
     setsockopt(s->c->sock, IPPROTO_TCP, SO_KEEPALIVE,
                &s->c->enable, sizeof(int));

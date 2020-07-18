@@ -19,7 +19,8 @@ char *create_delete_all_mess() {
 
 char *mx_delete_messages(t_data *data, char *buf) {
     cJSON *str = cJSON_Parse(buf);
-    char *who_drop = cJSON_GetObjectItemCaseSensitive(str, "who_clean")->valuestring;
+    char *who_drop = cJSON_GetObjectItemCaseSensitive(str,
+        "who_clean")->valuestring;
 
     if (data->argc == 4) {
         if (!strcmp(who_drop, data->argv[3])) {

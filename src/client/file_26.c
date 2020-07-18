@@ -32,6 +32,7 @@ void mx_init_chatt(t_s *s) {
         GTK_WIN_POS_CENTER_ALWAYS); 
     pthread_t thread_input;
     pthread_attr_t attr;
+    
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     int tc = pthread_create(&thread_input, &attr, 
