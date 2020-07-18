@@ -15,8 +15,6 @@ static char *prepea_cjson(int id, char *time, char *login, char *msg) {
     return res;
 }
 
-
-
 void mx_chat_send_history(t_data *data, struct tls *tlscon) {
     int res;
 
@@ -37,4 +35,29 @@ void mx_chat_send_history(t_data *data, struct tls *tlscon) {
         res = sqlite3_step(data->stmt);
     }
     sqlite3_finalize(data->stmt);
+}
+
+static void add_lang_data(t_data *data, char *login, char *lang) {
+    sqlite3_stmt *stmt = data->stmt;
+    char *str2 = "UPDATE users SET lang = ?1 WHERE login = ?2";
+
+    sqlite3_prepare_v2(data->database, str2, -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, lang, 3, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, login, strlen(login), SQLITE_STATIC);
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        printf("Failed to add user lang\n");
+    sqlite3_finalize(stmt);
+}
+
+void mx_chat_add_ui_data(t_data *data, char *login, char *tema, char *lang) {
+    sqlite3_stmt *stmt = data->stmt;
+    char *str = "UPDATE users SET tema = ?1 WHERE login = ?2";
+
+    sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, tema, 5, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, login, strlen(login), SQLITE_STATIC);
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        printf("Failed to add user tema\n");
+    sqlite3_finalize(stmt);
+    add_lang_data(data, login, lang);
 }

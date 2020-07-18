@@ -10,3 +10,4 @@ uchat
 uchat_server
 cjson_lib.a
 uchat_server.log
+liba_sqlite3.a

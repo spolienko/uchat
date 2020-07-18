@@ -8,57 +8,36 @@ int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn) {
     socklen_t clen = sizeof(caddr);
 
     for(int i= 0;;i++) {
+        char buff[100];
+
         event = kevent(kq, NULL, 0, kEvent, 1, t);
         if (event == 0)
             continue ;
-        if (event == -1) {
-            printf("listen to event error: %s\n", strerror(errno));
+        if (event == -1)
             break;
-        }
         if (kEvent->ident == (uintptr_t) sock) {
             client = accept(sock, NULL, NULL);
-            if(client == -1) {
-                printf(" Connect from client error: %s\n", strerror(errno));
+            if(client == -1)
                 break ;
-            }
-            char buff[100];
-            printf("New client: %d\n", client);
-            getnameinfo((struct sockaddr*)&caddr, clen,
-                        buff, 100, 0, 0,
-                        NI_NUMERICHOST);
+            getnameinfo((struct sockaddr*)&caddr, clen, 
+                        buff, 100, 0, 0, NI_NUMERICHOST);
             EV_SET(kEvent, client, EVFILT_READ, EV_ADD, 0, 0, 0);
-            if (kevent(kq, kEvent, 1, 0, 0, NULL) == -1) {
-                printf("Client kevent error: %s\n", strerror(errno));
+            if (kevent(kq, kEvent, 1, 0, 0, NULL) == -1) 
                 break;
-            }
-
-            if(tls_accept_socket(conn->tls, &conn->connection_array[client], client) < 0) {
-                printf("tls_accept_socket error\n");
+            if(tls_accept_socket(conn->tls, &conn->connection_array[client], client) < 0)
                 exit(1);
-            }
-
-            if (tls_handshake(conn->connection_array[client]) < 0) {
-                printf("tls_handshake error\n");
-                // printf("%s\n", tls_error(conn->connection_array[client]));
+            if (tls_handshake(conn->connection_array[client]) < 0) 
                 exit(1);
-            }
-            // mx_report_tls(conn->connection_array[client], "new client connected");
-            printf("\nClient connected successfully %d\n", (int)kEvent->ident);
-            
         }
         else {
             if ((kEvent->fflags & EV_EOF) != 0) {
-                printf("Client disconected");
                 close(kEvent->ident);
                 tls_close(conn->connection_array[kEvent->ident]);
                 tls_free(conn->connection_array[kEvent->ident]);
             }
-            else {
-                if((mx_client_worker(conn, kEvent, data) == -1)) {
-                    printf("error");
+            else
+                if((mx_client_worker(conn, kEvent, data) == -1))
                     break ;
-                }
-            }
         }
     }
 }

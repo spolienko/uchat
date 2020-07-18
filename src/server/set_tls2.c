@@ -37,14 +37,10 @@ t_connection *mx_tls_start(t_connection *conn) {
     mx_tls_config_set_cert_file(config);
     tls_config_verify_client(config);
     tls = tls_server();
-    if (tls == NULL) {
-        printf("tls_server error\n");
+    if (tls == NULL)
         exit(1);
-    }
-    if (tls_configure(tls, config) < 0) {
-        printf("tls_configure error: %s\n", tls_error(tls));
+    if (tls_configure(tls, config) < 0)
         exit(1);
-    }
     conn->config = config;
     conn->tls = tls;
     mx_init_tls_array(conn->connection_array, MX_MAX_CONN);
