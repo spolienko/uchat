@@ -1,5 +1,10 @@
 #include "uchat.h"
 
+static void auditor_lol(t_connection *conn,int network_socket,t_data data ) {
+    mx_tls_start(conn);
+    mx_start_server(&data, network_socket, conn);
+}
+
 int main(int argc, char **argv) {
     int port;
     int network_socket;
@@ -17,8 +22,7 @@ int main(int argc, char **argv) {
             network_socket = mx_start_network(port, argv[2]);
         if (argc == 2)
             network_socket = mx_start_network(port, "null");
-        mx_tls_start(conn);
-        mx_start_server(&data, network_socket, conn);
+         auditor_lol(conn, network_socket, data);
     }
     else {
         mx_printerr("usage: uchat_server [port] && if not local [ip]\n");
