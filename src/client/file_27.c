@@ -51,8 +51,6 @@ void mx_init_logining_1(t_s *s) {
     s->l->user_ety = gtk_entry_new();
     s->l->pass_ety = gtk_entry_new();
     s->l->ok_btn = gtk_button_new_with_label("Enter");
-    gtk_entry_set_text(GTK_ENTRY(s->l->user_ety), "admin");
-    gtk_entry_set_text(GTK_ENTRY(s->l->pass_ety), "admin");
     s->l->vbox = gtk_box_new(TRUE, 0);
     s->l->m_lbl_b = gtk_box_new(TRUE, 10);
     s->l->u_box = gtk_box_new(FALSE, 10);

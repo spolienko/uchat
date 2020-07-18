@@ -8,7 +8,7 @@ void mx_drop(t_data *data, int id) {
     sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
     sqlite3_bind_text(stmt, 1, mx_itoa(id),
                       strlen(mx_itoa(id)), SQLITE_STATIC);
-    if(sqlite3_step(stmt) != SQLITE_DONE)
+    if (sqlite3_step(stmt) != SQLITE_DONE)
         printf("Failed to delete message from database\n");
     sqlite3_finalize(stmt);
 }
@@ -27,18 +27,17 @@ char *mx_do_delete(t_data *data, char *buf) {
 
 int mx_edit(t_data *data, int edit_id, char *new_mess, char *login) {
     sqlite3_stmt *stmt = data->stmt;
-    char *str = "UPDATE messages SET body=\"?1\" "
-        "WHERE id=?2 AND login=\"?3\"";
+    char *s = "UPDATE messages SET body=\"?1\" WHERE id=?2 AND login=\"?3\"";
     int ret = 0;
 
-    sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
+    sqlite3_prepare_v2(data->database, s, -1, &stmt, 0);
     sqlite3_bind_text(stmt, 1, new_mess,
                       strlen(new_mess), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, mx_itoa(edit_id),
                       strlen(mx_itoa(edit_id)), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 3, login,
                       strlen(login), SQLITE_STATIC);
-    if(sqlite3_step(stmt) == SQLITE_DONE)
+    if (sqlite3_step(stmt) == SQLITE_DONE)
         ret = 1;
     sqlite3_finalize(stmt);
     return ret;

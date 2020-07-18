@@ -19,7 +19,7 @@ int mx_tls_config_set_cert_file(struct tls_config *conf) {
 }
 
 void mx_init_tls_array(struct tls *arr[MX_MAX_CONN], int len) {
-    for(int i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
         arr[i] = NULL;
     }
     return ;

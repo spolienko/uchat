@@ -2,7 +2,7 @@
 
 static void auditor_lol(void) {
     struct sigaction sa;
-
+    
     umask(0);
     sa.sa_handler = SIG_IGN;
     sigemptyset(&sa.sa_mask);

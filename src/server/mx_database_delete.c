@@ -36,7 +36,7 @@ int mx_check_login(t_data *data, char *login, char *pas) {
         return 0;
     sqlite3_prepare_v2(data->database, str, -1, &data->stmt, 0);
     sqlite3_bind_text(data->stmt, 1, login, strlen(login), SQLITE_STATIC);
-    if(sqlite3_step(data->stmt) != SQLITE_ROW) {
+    if (sqlite3_step(data->stmt) != SQLITE_ROW) {
         sqlite3_finalize(data->stmt);
         return mx_chat_create_user(data, login, pas);
     }
@@ -54,7 +54,7 @@ char *mx_time_to_str(void) {
     char buf[64] = {0};
     
     gettimeofday(&tv, NULL);
-    if(tv.tv_sec) {
+    if (tv.tv_sec) {
         nowtm = localtime(&tv.tv_sec);
         strftime(buf, 64, "%d.%m.%Y %H:%M:%S", nowtm);
         return strdup(buf);

@@ -26,7 +26,7 @@ void mx_create_privat_mes(t_s *s, cJSON *msg) {
     char *who_get = cJSON_GetObjectItemCaseSensitive(msg, 
         "to_user")->valuestring;
 
-    if (!strcmp(who_get, s->h->login)) {
+    if(!strcmp(who_get, s->h->login)) {
         t_inf_row *inf = malloc(sizeof(t_inf_row));
         char *str = mx_create_privat_message_body(msg);
 

@@ -15,10 +15,8 @@ static void change_pass_in_db(t_data *data, char *who_c, char *new_p) {
 
 void mx_change_pass(t_data *data, char *buf) {
     cJSON *str = cJSON_Parse(buf);
-    char *who_c = cJSON_GetObjectItemCaseSensitive(str,
-        "who_change")->valuestring;
-    char *new_p = cJSON_GetObjectItemCaseSensitive(str,
-        "new_pass")->valuestring;
+    char *who_c = cJSON_GetObjectItemCaseSensitive(str, "who_change")->valuestring;
+    char *new_p = cJSON_GetObjectItemCaseSensitive(str, "new_pass")->valuestring;
 
     change_pass_in_db(data, who_c, new_p);
 }

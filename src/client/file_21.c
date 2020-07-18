@@ -10,7 +10,7 @@ void *mx_watcher_thread(void *ss) {
     t_s *s = (t_s *)ss;
 
     s->h->can_do_msg = 1;
-    g_timeout_add(3000, (GSourceFunc)mx_can_deleting_set, s);
+    g_timeout_add(1500, (GSourceFunc)mx_can_deleting_set, s);
     while (true) {
         bzero(s->c->bufs, 1000);
         poll(s->c->pfd, 2, -1);

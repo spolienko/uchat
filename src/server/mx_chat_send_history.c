@@ -19,11 +19,11 @@ void mx_chat_send_history(t_data *data, struct tls *tlscon) {
     int res;
 
     sqlite3_prepare_v2(data->database, "SELECT * FROM (SELECT *, ROWID FROM "
-                       "messages ORDER BY ROWID DESC LIMIT 20) ORDER BY "
-                       "ROWID ASC", -1, &data->stmt, 0);
+                      "messages ORDER BY ROWID DESC LIMIT 20) ORDER BY "
+                      "ROWID ASC", -1, &data->stmt, 0);
     sqlite3_bind_int(data->stmt, 1, 10);
     res = sqlite3_step(data->stmt);
-    while(res != SQLITE_DONE) {
+    while (res != SQLITE_DONE) {
         int id = sqlite3_column_int(data->stmt, 0);
         char *time = (char *)sqlite3_column_text(data->stmt, 1);
         char *login = (char *) sqlite3_column_text(data->stmt, 2);

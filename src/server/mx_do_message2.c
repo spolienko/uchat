@@ -21,8 +21,7 @@ static char *create_drop_call(char *drop_user) {
 char *mx_drop_user_from_admin(t_data *data, char *buf) {
     cJSON *str = cJSON_Parse(buf);
     char *admin = cJSON_GetObjectItemCaseSensitive(str, "admin")->valuestring;
-    char *drop_user = cJSON_GetObjectItemCaseSensitive(str,
-        "drop_user")->valuestring;
+    char *drop_user = cJSON_GetObjectItemCaseSensitive(str, "drop_user")->valuestring;
     
     if (data->argc == 4)
         if (!strcmp(admin, data->argv[3]))

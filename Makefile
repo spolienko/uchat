@@ -17,13 +17,13 @@ INCS2 = inc/uchat.h
 
 
 SRC_SERVER = main.c \
-			mx_demon.c \
-			mx_worker.c \
-			mx_do_event.c \
-			mx_server.c \
-			mx_network.c \
-			mx_set_tls1.c \
-			mx_set_tls2.c \
+			demon.c \
+			worker.c \
+			event.c \
+			server.c \
+			network.c \
+			set_tls1.c \
+			set_tls2.c \
 			mx_database_delete.c \
 			mx_database_edit.c \
 			mx_database_init.c \
