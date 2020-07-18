@@ -1,13 +1,13 @@
 #include "uchat.h"
 
 static char *create_table_users() {
-    char *str = "CREATE TABLE IF NOT EXISTS users(login varchar(32) NOT NULL ";
-    char *str2 = mx_strjoin(str, "PRIMARY KEY, password varchar(32) NOT NULL");
-    char *str3 = mx_strjoin(str2, ", tema char(6), lang char(3))");
+    char *s = "CREATE TABLE IF NOT EXISTS users(login varchar(32) NOT NULL";
+    char *s2 = mx_strjoin(s, "PRIMARY KEY, password varchar(32) NOT NULL");
+    char *s3 = mx_strjoin(s2, ", tema char(6), lang char(3))");
 
-    mx_strdel(&str2);
-    return str3;
-}   /* Тут таблицы: Логин, Пароль, Тема, Язык.*/
+    mx_strdel(&s2);
+    return s3;
+}  
 
 static char *create_table_messages() {
     char *str = "CREATE TABLE IF NOT EXISTS messages(id integer primary key ";
@@ -16,7 +16,7 @@ static char *create_table_messages() {
     
     mx_strdel(&str2);
     return str3;
-}    /* Тут таблицы: ID, Время, Логин, Текст.*/
+}   
 
 void mx_database_init(t_data *data) {
     char *str = create_table_users();
@@ -38,7 +38,8 @@ void mx_database_init(t_data *data) {
 }
 
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg) {
-    char *s = "SELECT id FROM messages WHERE login=?1 AND time=?2 AND body=?3";
+    char *s = "SELECT id FROM messages WHERE login=?1"
+        "AND time=?2 AND body=?3";
     int id;
 
     sqlite3_prepare_v2(data->database, s, -1, &data->stmt, 0);

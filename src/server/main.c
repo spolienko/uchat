@@ -29,10 +29,8 @@ int main(int argc, char **argv) {
             network_socket = mx_start_network(port, "null");
         auditor_lol(conn, network_socket, data);
     }
-    else {
-        mx_printerr("usage: uchat_server [port] && if not local [ip]\n");
-        exit(1);
-    }
+    mx_printerr("usage: uchat_server [port] && if not local [ip]\n");
+    exit(1);
     close(network_socket);
     return 0;
 }

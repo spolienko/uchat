@@ -14,7 +14,8 @@ static char *check_on_conection(char *msg, int con_id) {
     return msg;
 } 
 
-int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
+int mx_client_worker(t_connection *conn, struct kevent *kEvent,
+    t_data *data) {
     char buf[1024];
     int rc;
     char *msg;
@@ -23,11 +24,14 @@ int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data) {
     if (rc > 0 ) {
         buf[rc] = 0;
         data->connecting = kEvent->ident;
-        msg = mx_do_message(data, buf, (struct tls *)conn->connection_array[kEvent->ident], conn);
+        msg = mx_do_message(data, buf,
+            (struct tls *)conn->connection_array[kEvent->ident], conn);
         for(int i = 3; i <= MX_MAX_CONN; i++){
-            if (msg != NULL && (struct tls *)conn->connection_array[i] != NULL ) {
+            if (msg != NULL && (struct tls *)conn->connection_array[i]
+                != NULL ) {
                 msg = check_on_conection(msg, i);
-                tls_write((struct tls *)conn->connection_array[i], msg, strlen(msg));
+                tls_write((struct tls *)conn->connection_array[i], msg,
+                    strlen(msg));
             }
         }
     }

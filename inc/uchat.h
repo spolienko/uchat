@@ -60,13 +60,15 @@ typedef struct s_data {
     char *hash;
     char **argv;
     int argc;
-} t_data;
+}              t_data;
 
 typedef struct s_connection {
     struct tls_config *config;
     struct tls *connection_array[MX_MAX_CONN];
     struct tls *tls;
-} t_connection;
+}              t_connection;
+
+
 
 void mx_database_init(t_data *data);
 char *mx_chat_get_user_password(t_data *data, char *login);
@@ -75,7 +77,8 @@ void mx_chat_create_session(t_data *data, char *login);
 char * mx_chat_new_message(t_data *data, char *login, char *msg);
 void mx_chat_delete_session(t_data *data, const char *login);
 int mx_check_login(t_data *data, char *login, char *pas);
-void mx_do_login(t_data *data, char *buf, struct tls *tlscon, t_connection *conn);
+void mx_do_login(t_data *data, char *buf, struct tls *tlscon,
+    t_connection *conn);
 char *mx_time_to_str(void);
 char *mx_do_msg(t_data *data, char *buf);
 int mx_get_msg_id(t_data *data, char *login, char *time, char *msg);
@@ -89,7 +92,8 @@ char *mx_do_message(t_data *data, char *buf, struct tls *tlsconn,
 void mx_start_server(t_data *data, int socket, t_connection *conn);
 void mx_demonize(char *logfile);
 int mx_client_worker(t_connection *conn, struct kevent *kEvent, t_data *data);
-void mx_listen_for_events(t_data *data, int kq, int sock, struct kevent *kEvent, struct timespec *t, t_connection *conn);
+void mx_listen_for_events(t_data *data, int kq, int sock, 
+    struct kevent *kEvent, struct timespec *t, t_connection *conn);
 struct tls_config *mx_tls_config_new(void);
 int mx_tls_config_parse_proto(unsigned int *p);
 int mx_tls_config_set_proto(struct tls_config *conf, unsigned int p);
@@ -106,5 +110,7 @@ void mx_drop_user_sesion(t_data *data, char *buf, t_connection *conn);
 void mx_drop_user_data(t_data *data, char *login);
 char *mx_do_delete(t_data *data, char *buf);
 char *mx_do_edit(t_data *data, char *buf);
+
+
 #endif
 

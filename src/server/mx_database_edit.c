@@ -35,7 +35,7 @@ int mx_chat_create_user(t_data *data, char *login, char *password) {
 }
 
 void mx_chat_create_session(t_data *data, char *login) {
-    sqlite3_stmt *stmt = data->stmt;/* Добавление онлайн пользователя в бд*/
+    sqlite3_stmt *stmt = data->stmt;
     char *str = "INSERT INTO sessions(login) VALUES (?)";
 
     sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
@@ -46,7 +46,7 @@ void mx_chat_create_session(t_data *data, char *login) {
 }
 
 char * mx_chat_new_message(t_data *data, char *log, char *msg) {
-    sqlite3_stmt *stmt = data->stmt;/* Вставка сообщения в messages */
+    sqlite3_stmt *stmt = data->stmt;
     char *str = "INSERT INTO messages(time, login, body) VALUES (?1, ?2, ?3)";
     char *msg_time = mx_time_to_str();
 

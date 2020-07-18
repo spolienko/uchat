@@ -27,7 +27,8 @@ char *mx_do_delete(t_data *data, char *buf) {
 
 int mx_edit(t_data *data, int edit_id, char *new_mess, char *login) {
     sqlite3_stmt *stmt = data->stmt;
-    char *str = "UPDATE messages SET body=\"?1\" WHERE id=?2 AND login=\"?3\"";
+    char *str = "UPDATE messages SET body=\"?1\" "
+        "WHERE id=?2 AND login=\"?3\"";
     int ret = 0;
 
     sqlite3_prepare_v2(data->database, str, -1, &stmt, 0);
@@ -47,7 +48,8 @@ char *mx_do_edit(t_data *data, char *buf) {
     cJSON *str = cJSON_Parse(buf);
     cJSON *send = cJSON_CreateObject();
     int edit_id = cJSON_GetObjectItemCaseSensitive(str, "edit_id")->valueint;
-    char *new_mess = cJSON_GetObjectItemCaseSensitive(str, "msg")->valuestring;
+    char *new_mess = cJSON_GetObjectItemCaseSensitive(str,
+        "msg")->valuestring;
     char *login = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
 
     if(mx_edit(data, edit_id, new_mess, login)) {
