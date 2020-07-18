@@ -1,24 +1,33 @@
 #include "uchat.h"
 
-void mx_do_login(t_data *data, char *buf, struct tls *tlscon) {
+void check_logining(t_data *data, t_connection *conn) {
+    close(data->connecting);
+    tls_close(conn->connection_array[data->connecting]);
+    tls_free(conn->connection_array[data->connecting]);
+}
+
+void mx_do_login(t_data *data, char *buf, struct tls *tlscon,
+                 t_connection *conn) {
     cJSON *str = cJSON_Parse(buf);
     char *user = cJSON_GetObjectItemCaseSensitive(str, "login")->valuestring;
     char *msg = cJSON_GetObjectItemCaseSensitive(str, "pasword")->valuestring;
     int res = 0;
-
-    res = mx_check_login(data, user, msg);
+    
+    data->hash = crypt(msg, "1a");
+    res = mx_check_login(data, user, data->hash);
     mx_strdel(&msg);
     if (res == 1 || res == 2) {
         msg =  mx_login_back(data, true, user);
         mx_chat_create_session(data, user);
     }
-    else if (res == 3 || res == 0)
-        msg =  mx_login_back(data, false, user);
+    else if (res == 3 || res == 0) {
+        msg = mx_login_back(data, false, user);    
+    }
     tls_write(tlscon, msg, strlen(msg));
+    if (res == 3 || res == 0)
+        check_logining(data, conn);
     if (res == 1 || res == 2)
         mx_chat_send_history(data, tlscon);
-    mx_strdel(&user);
-    mx_strdel(&msg);
 }
 
 static char *get_user_tema(t_data *data, char *login) {

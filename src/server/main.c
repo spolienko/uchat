@@ -1,23 +1,28 @@
 #include "uchat.h"
 
+static void auditor_lol(t_connection *conn,int network_socket,t_data data ) {
+    mx_tls_start(conn);
+    mx_start_server(&data, network_socket, conn);
+}
+
 int main(int argc, char **argv) {
     int port;
     int network_socket;
     t_connection *conn;
     t_data data;
 
-    if (argc == 2 || argc == 3) {
+    if (argc == 2 || argc == 3 || argc == 4) {
         port = atoi(argv[1]);
-        //mx_demonize("uchat_server.log");
+        data.argc = argc;
+        data.argv = argv;
+        mx_demonize("uchat_server.log");
         conn = (t_connection*)malloc(sizeof(t_connection));
-        mx_database_init(&data); // Добавить компиляцию sqlite3 в Makefile
-        if (argc == 3)
+        mx_database_init(&data); 
+        if (argc == 3 || argc == 4)
             network_socket = mx_start_network(port, argv[2]);
         if (argc == 2)
             network_socket = mx_start_network(port, "null");
-        mx_tls_start(conn);
-        mx_start_server(&data, network_socket, conn);
-        printf("Server socket: %d\n", network_socket);
+         auditor_lol(conn, network_socket, data);
     }
     else {
         mx_printerr("usage: uchat_server [port] && if not local [ip]\n");

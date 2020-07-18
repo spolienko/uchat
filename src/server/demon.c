@@ -1,21 +1,30 @@
 #include "uchat.h"
 
+static void auditor_lol(void) {
+    struct sigaction sa;
+
+    umask(0);
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+}
+
+static void auditor_lol_2(char* dir) {
+    getcwd(dir, PATH_MAX + 1);
+    chdir(dir);
+}
+
 void mx_demonize(char *logfile) {
     int fd;
     pid_t pid;
     struct rlimit rl;
-    struct sigaction sa;
     char *dir = mx_strnew(PATH_MAX + 1);
 
     pid = fork();
     if (pid > 0)
         exit(0);
-    umask(0);
-    sa.sa_handler = SIG_IGN;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    getcwd(dir, PATH_MAX + 1);
-    chdir(dir);
+    auditor_lol();
+    auditor_lol_2(dir);
     if (rl.rlim_max == RLIM_INFINITY)
         rl.rlim_max = 1024;
     for (rlim_t i = 0; i < rl.rlim_max; i++)

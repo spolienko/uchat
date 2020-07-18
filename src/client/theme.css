@@ -8,8 +8,7 @@
     text-decoration: none;
     border-radius: 0;
     font-size: 18px;
-    box-shadow: inset 0px 0px rgba(0, 0, 0, 0), 0 0px white;
-    text-shadow: none;
+    
 }
 
 button{
@@ -17,11 +16,14 @@ button{
     border-width: 2px;
 }
 
-button:hover{
+.black:hover, .white:hover{
     border-color: orange;
     color: orange;
 }
 
+.orang{
+    background-color: orange;
+}
 
 .lent{
     border: 2px solid white;
@@ -86,7 +88,10 @@ button:hover{
     background-color: black;
     border: 2px solid white ;
     color: white;
-    
+}
+
+.pading_left_100 {
+    padding-left: 100px;
 }
 .black.black_theme{
     background-color: black;
@@ -116,112 +121,32 @@ button:hover{
 
 }
 
+#E{
+    box-shadow: inset 0px 0px rgba(0, 0, 0, 0);
+}
+
 .black_theme:hover, .white_theme:hover{
     border-color: orange;
 }
 
 .X{
     background: transparent;
+    border-width:0 ;
     border: none;
     padding:0 20px;
-}
-/* 
-
-
-
-.main_label{
-    font-size: 30px;
-    padding: 15px ;
-}
-.lang_btn{
-    margin: 0 10px;
-}
-
-.white_them{
-    background: white;
-}
-
-entry{
-border:0;
-border-bottom: 2px solid white;
-border-radius: 0;
-padding: 5px;
-}
-entry:focus{
-border-color: orange;
-color: orange;
-}
-.black{
-    background: black;
-    color: white;
-    border-color: white;
-    transition: 1s;
-}
-
-.white{
-    background: white;
-    color: black;
-    border-color: black;
-    transition: 1s;
-
-}
-
-.white_them{
-    background: white;
-    border: 0;
-    border-radius: 0;
-}
-
-.black_them{
-    background: black;
-    border: 0;
-    border-radius: 0;
-}
-
-.white_them.white, .black_them.white {
-    border: 0;
-    border-radius: 0;
-    border-bottom: 2px solid black;
-}
-
-.white_them.black, .black_them.black {
-    border: 0;
-    border-radius: 0;
-    border-bottom: 2px solid white;
-}
-
-.white_them.black:hover, .black_them.black:hover {
-    background: orange;
-    transition: 1s;
-}
-.white_them.white:hover, .black_them.white:hover {
-    background: orange;
-    transition: 1s;
-}
-.ok_btn{
-    padding: 12px 40px;
-    margin: 0 70px;
-}
-.error{
-    color: orange;
-}
-
-button:hover{
-    color: orange;
-    border-color: orange;
+    box-shadow: inset 0px 0px rgba(0, 0, 0, 0);
 }
 
 
-
+.bold {
+    font-weight: bold;
+}
 
 .h2{
-    font-size: 20px;
-}
-.h1{
     font-size: 25px;
 }
-.h3{
-    font-size: 15px;
+.h1{
+    font-size: 16px;
 }
 
 .orange, .orange label{
@@ -233,28 +158,8 @@ button:hover{
 .lime{
     color:lime;
 }
-.normal{
-    font-style: normal;
-    font-weight: normal;
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-.bold{
-    font-weight: bold;
-}
 
 .italic{
     font-style:  italic;
 }
 
-.X{
-    background: transparent;
-    border: none;
-}
-
-.pading_left_100 {
-    padding-left: 100px;
-}
-.body{
-    padding: 20px;
-} */
