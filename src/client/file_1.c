@@ -4,9 +4,7 @@ int mx_exit_chat(t_s *s) {
     tls_close(s->c->tls);
     tls_free(s->c->tls);
     tls_config_free(s->c->cnf);
-    printf("Closing socket...\n");
     close(s->c->sock);
-    printf("exit client\n");
     return 0;
 }
 
@@ -64,12 +62,10 @@ void mx_first_serv_init(t_s *s) {
     tls_config_insecure_noverifycert(s->c->cnf);
     tls_config_insecure_noverifyname(s->c->cnf);
     if (tls_config_set_key_file(s->c->cnf, "./certificates/client.key") < 0) {
-        printf("tls_config_set_key_file error\n");
         exit(1);
     }
     if (tls_config_set_cert_file(s->c->cnf, 
                                  "./certificates/client.pem") < 0) {
-        printf("tls_config_set_cert_file error\n");
         exit(1);
     }
     tls_configure(s->c->tls, s->c->cnf);
@@ -88,11 +84,9 @@ int mx_second_serv_init(t_s *s, char **argv) {
                 s->c->address_buffer, sizeof(s->c->address_buffer),
                 s->c->service_buffer, sizeof(s->c->service_buffer),
                 NI_NUMERICHOST);
-    printf("%s %s\n", s->c->address_buffer, s->c->service_buffer);
     s->c->sock = socket(s->c->p_ad->ai_family,
                         s->c->p_ad->ai_socktype, s->c->p_ad->ai_protocol);
     if (s->c->sock == -1) {
-        printf("error sock = %s\n", strerror(errno));
         return 1;
     }
     return 0;

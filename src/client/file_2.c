@@ -27,17 +27,13 @@ int mx_third_serv_init(t_s *s) {
     setsockopt(s->c->sock, IPPROTO_TCP, SO_KEEPALIVE,
                &s->c->enable, sizeof(int));
     if (connect(s->c->sock, s->c->p_ad->ai_addr, s->c->p_ad->ai_addrlen)) {
-        printf("connect error = %s\n", strerror(errno));
         return 1;
     }
     freeaddrinfo(s->c->p_ad);
-    printf("connect TCP sock =%d\n", s->c->sock);
     if (tls_connect_socket(s->c->tls, s->c->sock, "uchat_server") < 0) {
-        printf("tls_connect error\n");
         printf("%s\n", tls_error(s->c->tls));
         exit(1);
     }
-    printf("tls connect +\n");
     return 0;
 }
 
@@ -48,8 +44,6 @@ int mx_init_server(t_s *s, char **argv) {
     if (mx_third_serv_init(s))
         return 1;
     if (tls_handshake(s->c->tls) < 0) {
-        printf("tls_handshake error\n");
-        printf("%s\n", tls_error(s->c->tls));
         exit(1);
     }
     mx_report_tls_client(s, "client");
